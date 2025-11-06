@@ -6,6 +6,7 @@ import { FeaturesGrid } from "@/components/FeaturesGrid";
 import { CertificatesSection } from "@/components/CertificatesSection";
 import { ConsultationSection } from "@/components/ConsultationSection";
 import { DeliverySection } from "@/components/DeliverySection";
+import { FAQSection } from "@/components/FAQSection";
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
         <ConsultationSection />
         <CertificatesSection />
         <DeliverySection />
+        <FAQSection />
       </main>
     </div>
   );
