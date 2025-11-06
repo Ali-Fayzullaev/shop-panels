@@ -7,6 +7,7 @@ import { CertificatesSection } from "@/components/CertificatesSection";
 import { ConsultationSection } from "@/components/ConsultationSection";
 import { DeliverySection } from "@/components/DeliverySection";
 import { FAQSection } from "@/components/FAQSection";
+import { ContactSection } from "@/components/ContactSection";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
         <CertificatesSection />
         <DeliverySection />
         <FAQSection />
+        <ContactSection />
       </main>
     </div>
   );
