@@ -63,6 +63,7 @@ export function Footer() {
               <li><span className="text-gray-300">Расчёт стоимости</span></li>
               <li><span className="text-gray-300">Доставка по России</span></li>
               <li><span className="text-gray-300">Профессиональный монтаж</span></li>
+              <li><a href="/dealers" className="text-gray-300 hover:text-white transition-colors">Наши дилеры</a></li>
               <li><span className="text-gray-300">Гарантия качества</span></li>
               <li><span className="text-gray-300">Техническая поддержка</span></li>
             </ul>
