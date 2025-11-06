@@ -70,7 +70,9 @@ export function Footer() {
 
           {/* Контакты */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Контакты</h3>
+            <h3 className="text-xl font-bold mb-4">
+              <a href="/contacts" className="hover:text-gray-300 transition-colors">Контакты</a>
+            </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 mt-1 shrink-0" />

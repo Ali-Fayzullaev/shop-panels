@@ -1,20 +1,26 @@
 import Header from "@/components/Header";
+import PageHero from "@/components/PageHero";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function RifledPage() {
+  const breadcrumbs = [
+    { label: "Главная", href: "/" },
+    { label: "Каталог", href: "/catalog" },
+    { label: "Рифленые панели" }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <PageHero 
+        title="Рифленые панели"
+        description="Стильные рифленые панели с фактурной поверхностью для создания оригинального интерьера"
+        backgroundImage="/images/wall2.png"
+        breadcrumbs={breadcrumbs}
+      />
       <main className="pt-6">
         <div className="container mx-auto px-4 py-8">
-          <nav className="text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-gray-700">Главная</a>
-            <span className="mx-2">/</span>
-            <a href="/catalog" className="hover:text-gray-700">Каталог</a>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Рифленые панели</span>
-          </nav>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-4/3 overflow-hidden bg-gray-100">

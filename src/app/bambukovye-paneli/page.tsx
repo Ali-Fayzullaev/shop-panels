@@ -1,21 +1,26 @@
 import Header from "@/components/Header";
+import PageHero from "@/components/PageHero";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function BambooPage() {
+  const breadcrumbs = [
+    { label: "Главная", href: "/" },
+    { label: "Каталог", href: "/catalog" },
+    { label: "Бамбуковые панели" }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
+      <PageHero 
+        title="Бамбуковые панели"
+        description="Экологичные и стильные бамбуковые панели для создания уютного и современного интерьера"
+        backgroundImage="/images/wall1.jpg"
+        breadcrumbs={breadcrumbs}
+      />
       <main className="pt-6">
         <div className="container mx-auto px-4 py-8">
-          {/* Хлебные крошки */}
-          <nav className="text-sm text-gray-500 mb-8">
-            <a href="/" className="hover:text-gray-700">Главная</a>
-            <span className="mx-2">/</span>
-            <a href="/catalog" className="hover:text-gray-700">Каталог</a>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Бамбуковые панели</span>
-          </nav>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Изображение */}
