@@ -29,3 +29,7 @@ body {
 .bb {
   border-bottom: 2px solid red; 
 }
+
+.bg-opacity {
+  background-color: opacity(0);
+}

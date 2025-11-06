@@ -33,7 +33,7 @@ const saleItems = [
 export default function SalePage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header variant="solid" />
+      <Header />
       <main className="pt-6">
         {/* Hero секция с акциями */}
         <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-16">

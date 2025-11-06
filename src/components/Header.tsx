@@ -13,22 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface HeaderProps {
-  variant?: "transparent" | "solid";
-}
-
-const Header = ({ variant = "transparent" }: HeaderProps) => {
-  const isTransparent = variant === "transparent";
+const Header = () => {
 
   return (
-    <header className={`sticky top-0 z-50 ${isTransparent ? "" : "bg-white shadow-md"}`}>
+    <header className="sticky top-0 z-50" style={{ backgroundColor: '#333333' }}>
       {/* Navigation */}
-      <nav className={`flex items-center justify-between p-6 lg:px-8 ${
-        isTransparent ? "absolute top-0 left-0 right-0" : ""
-      }`}>
+      <nav className="flex items-center justify-between p-6 lg:px-8">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className={`text-2xl font-bold ${isTransparent ? "text-white" : ""}`} style={{ color: isTransparent ? 'white' : '#333333' }}>
+          <h1 className="text-2xl font-bold text-white">
             WallPanels
           </h1>
         </div>
@@ -38,13 +31,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
           <NavigationMenuList>
             {/* Каталог с выпадающим меню */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger 
-                className={isTransparent 
-                  ? "text-white hover:text-white hover:bg-white/10 bg-transparent" 
-                  : "hover:bg-gray-100 bg-transparent"
-                }
-                style={{ color: isTransparent ? 'white' : '#333333' }}
-              >
+              <NavigationMenuTrigger className="text-white hover:text-white hover:bg-white/10 bg-transparent">
                 Каталог
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
@@ -97,13 +84,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
 
             {/* Покупателям с выпадающим меню */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger 
-                className={isTransparent 
-                  ? "text-white hover:text-white hover:bg-white/10 bg-transparent" 
-                  : "hover:bg-gray-100 bg-transparent"
-                }
-                style={{ color: isTransparent ? 'white' : '#333333' }}
-              >
+              <NavigationMenuTrigger className="text-white hover:text-white hover:bg-white/10 bg-transparent">
                 Покупателям
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
@@ -140,12 +121,9 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  isTransparent 
-                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
-                    : "hover:bg-gray-100 bg-transparent"
+                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
                 href="/visualizer"
-                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Визуализатор
               </NavigationMenuLink>
@@ -154,12 +132,9 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  isTransparent 
-                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
-                    : "hover:bg-gray-100 bg-transparent"
+                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
                 href="/cooperation"
-                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Сотрудничество
               </NavigationMenuLink>
@@ -168,12 +143,9 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  isTransparent 
-                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
-                    : "hover:bg-gray-100 bg-transparent"
+                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
                 href="/dealers"
-                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Дилеры
               </NavigationMenuLink>
@@ -182,12 +154,9 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  isTransparent 
-                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
-                    : "hover:bg-gray-100 bg-transparent"
+                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
                 href="/contacts"
-                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Контакты
               </NavigationMenuLink>
@@ -198,7 +167,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
         {/* Right side: Phone, Cart, Search */}
         <div className="flex items-center space-x-4">
           {/* Phone */}
-          <div className={`hidden md:flex items-center ${isTransparent ? "text-white" : ""}`} style={{ color: isTransparent ? 'white' : '#333333' }}>
+          <div className="hidden md:flex items-center text-white">
             <svg
               className="w-4 h-4 mr-2"
               fill="currentColor"
@@ -218,11 +187,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className={isTransparent 
-              ? "text-white hover:bg-white/10" 
-              : "hover:bg-gray-100"
-            }
-            style={{ color: isTransparent ? 'white' : '#333333' }}
+            className="text-white hover:bg-white/10"
           >
             <svg
               className="w-5 h-5"
@@ -243,11 +208,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className={`relative ${isTransparent 
-              ? "text-white hover:bg-white/10" 
-              : "hover:bg-gray-100"
-            }`}
-            style={{ color: isTransparent ? 'white' : '#333333' }}
+            className="relative text-white hover:bg-white/10"
           >
             <svg
               className="w-5 h-5"
@@ -273,11 +234,7 @@ const Header = ({ variant = "transparent" }: HeaderProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className={isTransparent 
-              ? "text-white hover:bg-white/10" 
-              : "hover:bg-gray-100"
-            }
-            style={{ color: isTransparent ? 'white' : '#333333' }}
+            className="text-white hover:bg-white/10"
           >
             <svg
               className="w-6 h-6"
