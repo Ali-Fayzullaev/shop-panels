@@ -3,7 +3,9 @@ import Hero from "@/components/Hero";
 import { InteriorCarousel } from "@/components/InteriorCarousel";
 import { CatalogGrid } from "@/components/CatalogGrid";
 import { FeaturesGrid } from "@/components/FeaturesGrid";
+import { CertificatesSection } from "@/components/CertificatesSection";
 import { ConsultationSection } from "@/components/ConsultationSection";
+import { DeliverySection } from "@/components/DeliverySection";
 
 export default function Home() {
   return (
@@ -17,6 +19,8 @@ export default function Home() {
         <CatalogGrid />
         <FeaturesGrid />
         <ConsultationSection />
+        <CertificatesSection />
+        <DeliverySection />
       </main>
     </div>
   );
