@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React from "react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,62 +13,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const Header = () => {
-  // Массив изображений для слайдшоу
-  const heroImages = [
-    "/images/wall.png",
-    "/images/wall1.jpg",
-    // '/images/wall2.png',
-    // '/images/wall3.png',
-    // '/images/wall4.png',
-    // '/images/wall5.jpg',
-    // '/images/wall6.png'
-  ];
+interface HeaderProps {
+  variant?: "transparent" | "solid";
+}
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Автоматическое переключение изображений каждые 5 секунд
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000); // 5 секунд
-
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
+const Header = ({ variant = "transparent" }: HeaderProps) => {
+  const isTransparent = variant === "transparent";
 
   return (
-    <header className="relative min-h-screen">
-      {/* Hero Background with Slideshow */}
-      <div className="absolute inset-0 z-0">
-        <div className="relative h-full w-full overflow-hidden">
-          {heroImages.map((image, index) => (
-            <div
-              key={image}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentImageIndex ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <Image
-                src={image}
-                alt={`Декоративные стеновые панели ${index + 1}`}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          ))}
-          {/* Overlay for better text readability - only for content area, not navigation */}
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
-      </div>
-
+    <header className={`sticky top-0 z-50 ${isTransparent ? "" : "bg-white shadow-md"}`}>
       {/* Navigation */}
-      <nav className="relative z-50 flex items-center justify-between p-6 lg:px-8">
+      <nav className={`flex items-center justify-between p-6 lg:px-8 ${
+        isTransparent ? "absolute top-0 left-0 right-0" : ""
+      }`}>
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className="text-2xl font-bold text-white">WallPanels</h1>
+          <h1 className={`text-2xl font-bold ${isTransparent ? "text-white" : ""}`} style={{ color: isTransparent ? 'white' : '#333333' }}>
+            WallPanels
+          </h1>
         </div>
 
         {/* Navigation Menu */}
@@ -77,50 +38,56 @@ const Header = () => {
           <NavigationMenuList>
             {/* Каталог с выпадающим меню */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger className="text-white hover:text-white hover:bg-white/10 bg-transparent">
+              <NavigationMenuTrigger 
+                className={isTransparent 
+                  ? "text-white hover:text-white hover:bg-white/10 bg-transparent" 
+                  : "hover:bg-gray-100 bg-transparent"
+                }
+                style={{ color: isTransparent ? 'white' : '#333333' }}
+              >
                 Каталог
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
                 <div className="grid w-[280px] gap-1 p-3 grid-cols-1 bg-white shadow-lg border rounded-md">
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/bamboo"
+                    href="/bambukovye-paneli"
                   >
                     Бамбуковые панели
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/rifled"
+                    href="/riflenye-paneli"
                   >
                     Рифленые панели
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/digital-print"
+                    href="/paneli-s-3d-pechatyu"
                   >
-                    Панели с цифровой печатью
+                    Панели с 3D печатью
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/aluminum"
+                    href="/alum"
                   >
                     Вспененный алюминий
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/ceramic"
+                    href="/flexible"
                   >
                     Гибкая керамика
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/catalog/profiles"
+                    href="/montazhnye-profili"
                   >
                     Монтажные профили
                   </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/promotions"
+                    href="/sale"
                   >
                     Акции
                   </NavigationMenuLink>
@@ -130,7 +97,13 @@ const Header = () => {
 
             {/* Покупателям с выпадающим меню */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger className="text-white hover:text-white hover:bg-white/10 bg-transparent">
+              <NavigationMenuTrigger 
+                className={isTransparent 
+                  ? "text-white hover:text-white hover:bg-white/10 bg-transparent" 
+                  : "hover:bg-gray-100 bg-transparent"
+                }
+                style={{ color: isTransparent ? 'white' : '#333333' }}
+              >
                 Покупателям
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
@@ -167,9 +140,12 @@ const Header = () => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                  isTransparent 
+                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                    : "hover:bg-gray-100 bg-transparent"
                 )}
                 href="/visualizer"
+                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Визуализатор
               </NavigationMenuLink>
@@ -178,9 +154,12 @@ const Header = () => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                  isTransparent 
+                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                    : "hover:bg-gray-100 bg-transparent"
                 )}
                 href="/cooperation"
+                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Сотрудничество
               </NavigationMenuLink>
@@ -189,9 +168,12 @@ const Header = () => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                  isTransparent 
+                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                    : "hover:bg-gray-100 bg-transparent"
                 )}
                 href="/dealers"
+                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Дилеры
               </NavigationMenuLink>
@@ -200,9 +182,12 @@ const Header = () => {
               <NavigationMenuLink
                 className={cn(
                   navigationMenuTriggerStyle(),
-                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                  isTransparent 
+                    ? "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                    : "hover:bg-gray-100 bg-transparent"
                 )}
                 href="/contacts"
+                style={{ color: isTransparent ? 'white' : '#333333' }}
               >
                 Контакты
               </NavigationMenuLink>
@@ -213,7 +198,7 @@ const Header = () => {
         {/* Right side: Phone, Cart, Search */}
         <div className="flex items-center space-x-4">
           {/* Phone */}
-          <div className="hidden md:flex items-center text-white">
+          <div className={`hidden md:flex items-center ${isTransparent ? "text-white" : ""}`} style={{ color: isTransparent ? 'white' : '#333333' }}>
             <svg
               className="w-4 h-4 mr-2"
               fill="currentColor"
@@ -233,7 +218,11 @@ const Header = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10"
+            className={isTransparent 
+              ? "text-white hover:bg-white/10" 
+              : "hover:bg-gray-100"
+            }
+            style={{ color: isTransparent ? 'white' : '#333333' }}
           >
             <svg
               className="w-5 h-5"
@@ -254,7 +243,11 @@ const Header = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10 relative"
+            className={`relative ${isTransparent 
+              ? "text-white hover:bg-white/10" 
+              : "hover:bg-gray-100"
+            }`}
+            style={{ color: isTransparent ? 'white' : '#333333' }}
           >
             <svg
               className="w-5 h-5"
@@ -274,72 +267,35 @@ const Header = () => {
             </span>
           </Button>
         </div>
-      </nav>
 
-      {/* Hero Content */}
-      <div
-        className="relative z-10 flex items-center justify-start px-6 lg:px-8"
-        style={{ height: "calc(100vh - 120px)" }}
-      >
-        {/* Left side dark overlay for text readability */}
-        <div className="absolute left-0 top-0 w-1/2 h-full bg-black/40"></div>
-
-        <div className="relative z-10 text-left max-w-xl ml-8 lg:ml-16">
-          {/* Small text above title */}
-          <p className="text-xs md:text-sm text-white/80 mb-3 font-medium tracking-wide">
-            Доставляем по всей Казахстану
-          </p>
-
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">
-            Декоративные стеновые панели для внутренней и внешней отделки стен
-          </h1>
-
-          <p className="text-sm md:text-base text-white/90 mb-6 max-w-lg leading-relaxed">
-            Преобразите ваше пространство с помощью наших премиальных стеновых
-            панелей. Качество, стиль и долговечность в каждом решении.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              size="default"
-              className="bg-white text-black hover:bg-white/90 text-sm px-6 py-3 h-auto"
-            >
-              Посмотреть каталог
-            </Button>
-            <Button
-              variant="outline"
-              size="default"
-              className="bg-transparent border-white text-white hover:bg-white hover:text-black text-sm px-6 py-3 h-auto"
-            >
-              Бесплатная консультация
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Navigation Menu (Hidden by default, you can add hamburger menu logic) */}
-      <div className="md:hidden absolute top-6 right-6 z-20">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/10"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+        {/* Mobile Navigation Menu (Hidden by default, you can add hamburger menu logic) */}
+        <div className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={isTransparent 
+              ? "text-white hover:bg-white/10" 
+              : "hover:bg-gray-100"
+            }
+            style={{ color: isTransparent ? 'white' : '#333333' }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </Button>
-      </div>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </Button>
+        </div>
+      </nav>
     </header>
   );
 };
