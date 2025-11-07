@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function VisualizerPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-[59vh] lg:min-h-screen bg-white">
       <Header />
       <VisualizerContent />
     </div>

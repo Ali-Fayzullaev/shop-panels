@@ -4,26 +4,28 @@ import React, { useState } from 'react';
 import { Palette, Settings } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-// ⚙️ Цвета для выбора — можно расширять
-const colorPalette = [
-  { id: 'bamboo', name: 'Бамбук', color: '#D2B48C' },
-  { id: 'wood-light', name: 'Светлое дерево', color: '#F5DEB3' },
-  { id: 'wood-dark', name: 'Темное дерево', color: '#8B4513' },
-  { id: 'stone', name: 'Камень', color: '#696969' },
-  { id: 'emerald', name: 'Изумруд', color: '#006400' },
-  { id: 'teal', name: 'Бирюза', color: '#008080' },
-  { id: 'beige', name: 'Бежевый', color: '#F5F5DC' },
-  { id: 'charcoal', name: 'Уголь', color: '#36454F' },
-  { id: 'clay', name: 'Глина', color: '#B27A5E' },
-  { id: 'sand', name: 'Песок', color: '#E6D5B8' },
+// 🖼️ ПАЛИТРА КАРТИН — 12 штук
+const picturePalette = [
+  { id: 'wall01', name: 'Картина 1', src: '/wall/wall01.png' },
+  { id: 'wall02', name: 'Картина 2', src: '/wall/wall02.png' },
+  { id: 'wall03', name: 'Картина 3', src: '/wall/wall03.png' },
+  { id: 'wall04', name: 'Картина 4', src: '/wall/wall04.png' },
+  { id: 'wall05', name: 'Картина 5', src: '/wall/wall05.png' },
+  { id: 'wall06', name: 'Картина 6', src: '/wall/wall06.png' },
+  { id: 'wall07', name: 'Картина 7', src: '/wall/wall07.png' },
+  { id: 'wall08', name: 'Картина 8', src: '/wall/wall08.png' },
+  { id: 'wall09', name: 'Картина 9', src: '/wall/wall09.jpg' },
+  { id: 'wall10', name: 'Картина 10', src: '/wall/wall10.png' },
+  { id: 'wall11', name: 'Картина 11', src: '/wall/wall11.png' },
+  { id: 'wall12', name: 'Картина 12', src: '/wall/wall12.png' },
 ];
 
 export function VisualizerContent() {
-  // 🔲 Состояния для каждой зоны
-  const [colors, setColors] = useState({
-    leftWall: colorPalette[0].color,
-    centerPanel: colorPalette[1].color,
-    rightWall: colorPalette[2].color,
+  // 🔲 Состояния для каждой зоны — теперь хранят ID картины
+  const [pictures, setPictures] = useState({
+    leftWall: picturePalette[0].src,
+    centerPanel: picturePalette[1].src,
+    rightWall: picturePalette[2].src,
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,19 +34,18 @@ export function VisualizerContent() {
   const sofaImageUrl = "/vez/img01.webp"; // ← ЗАМЕНИ НА PNG С ПРОЗРАЧНОСТЬЮ!
 
   return (
-    <section className="relative min-h-screen bg-gray-50 overflow-hidden">
-      {/* 🔥 ФОН РАЗДЕЛЁН НА ЗОНЫ */}
+    <section className="relative h-[50vh] lg:min-h-screen bg-gray-50 overflow-hidden">
+      {/* 🔥 ФОН РАЗДЕЛЁН НА ЗОНЫ — ТЕПЕРЬ С КАРТИНАМИ */}
       <div className="absolute inset-0 flex">
 
         {/* 🟢 ЛЕВАЯ СТЕНА */}
         <div 
           className="flex-1"
           style={{
-            backgroundColor: colors.leftWall,
-            backgroundImage: `url('/vez/wall-texture.jpg')`,
+            backgroundImage: `url('${pictures.leftWall}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transition: 'background-color 0.3s ease'
+            transition: 'background-image 0.3s ease'
           }}
         />
 
@@ -52,11 +53,10 @@ export function VisualizerContent() {
         <div 
           className="w-[50%] md:w-[40%]"
           style={{
-            backgroundColor: colors.centerPanel,
-            backgroundImage: `url('/vez/wall-texture.jpg')`,
+            backgroundImage: `url('${pictures.centerPanel}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transition: 'background-color 0.3s ease'
+            transition: 'background-image 0.3s ease'
           }}
         />
 
@@ -64,11 +64,10 @@ export function VisualizerContent() {
         <div 
           className="flex-1"
           style={{
-            backgroundColor: colors.rightWall,
-            backgroundImage: `url('/vez/wall-texture.jpg')`,
+            backgroundImage: `url('${pictures.rightWall}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transition: 'background-color 0.3s ease'
+            transition: 'background-image 0.3s ease'
           }}
         />
 
@@ -86,23 +85,23 @@ export function VisualizerContent() {
       </div>
 
       {/* 🛋️ ДИВАН — ПО ЦЕНТРУ, АДАПТИВНЫЙ */}
-      <div className="flex items-end justify-center h-screen ">
+      <div className="flex items-end justify-center h-[50vh] lg:h-screen">
         <div className="relative max-w-full max-h-full">
           <img
             src={sofaImageUrl}
             alt="Диван"
             className="max-w-[100vw] object-contain"
-            style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
+            style={{ filter: 'drop-shadow(0 0px 0px rgba(0,0,0,0.1))' }}
           />
         </div>
       </div>
 
-      {/* 🎨 МОДАЛЬНОЕ ОКНО С НАСТРОЙКАМИ ЗОН */}
+      {/* 🎨 МОДАЛЬНОЕ ОКНО С ВЫБОРОМ КАРТИН */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-[#333333]">Настройте зоны</h3>
+              <h3 className="text-xl font-bold text-[#333333]">Выберите картину</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -115,22 +114,25 @@ export function VisualizerContent() {
             <div className="mb-6">
               <h4 className="font-medium text-[#333333] mb-3">Левая стена</h4>
               <div className="grid grid-cols-3 gap-3">
-                {colorPalette.map((colorOption) => (
+                {picturePalette.map((pic) => (
                   <div
-                    key={`left-${colorOption.id}`}
-                    onClick={() => setColors(prev => ({ ...prev, leftWall: colorOption.color }))}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      colors.leftWall === colorOption.color
+                    key={`left-${pic.id}`}
+                    onClick={() => setPictures(prev => ({ ...prev, leftWall: pic.src }))}
+                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                      pictures.leftWall === pic.src
                         ? 'border-[#333333] bg-gray-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div
-                      className="w-full h-12 rounded-md border"
-                      style={{ backgroundColor: colorOption.color }}
-                    ></div>
-                    <p className="mt-2 text-xs text-center text-[#333333] truncate">
-                      {colorOption.name}
+                    <div className="w-full h-12 rounded-md overflow-hidden border">
+                      <img
+                        src={pic.src}
+                        alt={pic.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
+                      {pic.name}
                     </p>
                   </div>
                 ))}
@@ -141,22 +143,25 @@ export function VisualizerContent() {
             <div className="mb-6">
               <h4 className="font-medium text-[#333333] mb-3">Центральная панель</h4>
               <div className="grid grid-cols-3 gap-3">
-                {colorPalette.map((colorOption) => (
+                {picturePalette.map((pic) => (
                   <div
-                    key={`center-${colorOption.id}`}
-                    onClick={() => setColors(prev => ({ ...prev, centerPanel: colorOption.color }))}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      colors.centerPanel === colorOption.color
+                    key={`center-${pic.id}`}
+                    onClick={() => setPictures(prev => ({ ...prev, centerPanel: pic.src }))}
+                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                      pictures.centerPanel === pic.src
                         ? 'border-[#333333] bg-gray-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div
-                      className="w-full h-12 rounded-md border"
-                      style={{ backgroundColor: colorOption.color }}
-                    ></div>
-                    <p className="mt-2 text-xs text-center text-[#333333] truncate">
-                      {colorOption.name}
+                    <div className="w-full h-12 rounded-md overflow-hidden border">
+                      <img
+                        src={pic.src}
+                        alt={pic.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
+                      {pic.name}
                     </p>
                   </div>
                 ))}
@@ -167,22 +172,25 @@ export function VisualizerContent() {
             <div className="mb-6">
               <h4 className="font-medium text-[#333333] mb-3">Правая стена</h4>
               <div className="grid grid-cols-3 gap-3">
-                {colorPalette.map((colorOption) => (
+                {picturePalette.map((pic) => (
                   <div
-                    key={`right-${colorOption.id}`}
-                    onClick={() => setColors(prev => ({ ...prev, rightWall: colorOption.color }))}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      colors.rightWall === colorOption.color
+                    key={`right-${pic.id}`}
+                    onClick={() => setPictures(prev => ({ ...prev, rightWall: pic.src }))}
+                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                      pictures.rightWall === pic.src
                         ? 'border-[#333333] bg-gray-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div
-                      className="w-full h-12 rounded-md border"
-                      style={{ backgroundColor: colorOption.color }}
-                    ></div>
-                    <p className="mt-2 text-xs text-center text-[#333333] truncate">
-                      {colorOption.name}
+                    <div className="w-full h-12 rounded-md overflow-hidden border">
+                      <img
+                        src={pic.src}
+                        alt={pic.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
+                      {pic.name}
                     </p>
                   </div>
                 ))}
@@ -194,10 +202,10 @@ export function VisualizerContent() {
               <Button
                 variant="outline"
                 className="w-full text-[#333333] border-[#333333] hover:bg-[#333333] hover:text-white"
-                onClick={() => setColors({
-                  leftWall: colorPalette[0].color,
-                  centerPanel: colorPalette[1].color,
-                  rightWall: colorPalette[2].color,
+                onClick={() => setPictures({
+                  leftWall: picturePalette[0].src,
+                  centerPanel: picturePalette[1].src,
+                  rightWall: picturePalette[2].src,
                 })}
               >
                 Сбросить
