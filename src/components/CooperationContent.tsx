@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { TrendingUp, Users, Award, HeadphonesIcon, DollarSign, Building, Phone, Mail, CheckCircle, ArrowRight } from 'lucide-react';
+import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 import { Button } from "@/components/ui/button";
 
 const advantages = [
@@ -318,8 +319,8 @@ export function CooperationContent() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-[#333333] mb-1">Звоните прямо сейчас</h4>
-                  <a href="tel:+79937021764" className="text-[#989898] hover:text-[#333333] transition-colors text-lg font-medium">
-                    +7 (993) 702-17-64
+                  <a href={formatPhoneForCall(COMPANY_INFO.phoneClean)} className="text-[#989898] hover:text-[#333333] transition-colors text-lg font-medium">
+                    {COMPANY_INFO.phone}
                   </a>
                   <p className="text-sm text-[#989898]">Пн-Пт: 9:00 - 18:00</p>
                 </div>

@@ -5,10 +5,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // Используем стабильные настройки
   },
-  // Дополнительные настройки webpack для совместимости
-  webpack: (config: any) => {
-    return config;
-  }
+  // Пустая конфигурация Turbopack для совместимости
+  turbopack: {}
 };
 
 export default nextConfig;

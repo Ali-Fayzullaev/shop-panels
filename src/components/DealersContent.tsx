@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MapPin, Phone, Building, User } from 'lucide-react';
+import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
 const dealers = [
   {
@@ -493,7 +494,7 @@ export function DealersContent() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+79937021764"
+              href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
               className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />

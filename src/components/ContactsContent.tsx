@@ -3,23 +3,16 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Clock, Mail, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
 const locations = [
   {
     id: 1,
     title: "Главный офис",
-    address: "ТЦ Декоратор, Рязанский проспект 2, корп. 3, этаж 2",
-    phone: "+7 (993) 702-17-64",
-    hours: "Пн-Пт: 9:00 - 18:00, Сб-Вс: 10:00 - 17:00",
+    address: COMPANY_INFO.address,
+    phone: COMPANY_INFO.phone,
+    hours: COMPANY_INFO.workingHours,
     description: "Основной офис компании с полным ассортиментом панелей"
-  },
-  {
-    id: 2,
-    title: "Шоурум",
-    address: "г. Москва, ТЦ Галерея ремонта, МКАД 47 км",
-    phone: "+7 (993) 702-17-64",
-    hours: "Пн-Вс: 10:00 - 20:00",
-    description: "Демонстрационный зал с образцами всех видов панелей"
   }
 ];
 
@@ -63,24 +56,24 @@ export function ContactsContent() {
         <div className="mb-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a 
-              href="tel:+79937021764"
+              href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
               className="group bg-[#333333] rounded-lg p-6 hover:bg-[#333333]/80 transition-all duration-300 text-white text-center"
             >
               <Phone className="h-8 w-8 mx-auto mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold mb-2">Позвоните нам</h3>
-              <p className="text-gray-300">+7 (993) 702-17-64</p>
+              <p className="text-gray-300">{COMPANY_INFO.phone}</p>
             </a>
             
             <div className="bg-gray-50 rounded-lg p-6 text-center">
               <Clock className="h-8 w-8 mx-auto mb-3 text-[#333333]" />
               <h3 className="font-semibold mb-2 text-[#333333]">Режим работы</h3>
-              <p className="text-[#989898]">Пн-Пт: 9:00 - 18:00</p>
+              <p className="text-[#989898]">{COMPANY_INFO.workingHours}</p>
             </div>
             
             <div className="bg-gray-50 rounded-lg p-6 text-center">
               <MapPin className="h-8 w-8 mx-auto mb-3 text-[#333333]" />
-              <h3 className="font-semibold mb-2 text-[#333333]">Офисы в Москве</h3>
-              <p className="text-[#989898]">2 локации</p>
+              <h3 className="font-semibold mb-2 text-[#333333]">Офис в Астане</h3>
+              <p className="text-[#989898]">1 локация</p>
             </div>
           </div>
         </div>
@@ -89,10 +82,10 @@ export function ContactsContent() {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#333333] mb-4">
-              Наши офисы
+              Наш офис
             </h2>
             <p className="text-lg text-[#989898] max-w-2xl mx-auto">
-              Приходите к нам, чтобы увидеть качество панелей своими глазами
+              Приезжайте к нам, чтобы увидеть качество панелей своими глазами
             </p>
           </div>
 

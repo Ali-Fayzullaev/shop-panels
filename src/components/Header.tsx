@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { COMPANY_INFO } from "@/lib/company-info";
 
 const Header = () => {
 
@@ -21,8 +22,13 @@ const Header = () => {
       <nav className="flex items-center justify-between p-6 lg:px-8">
         {/* Logo */}
         <div className="flex items-center">
+          <img 
+            src={COMPANY_INFO.logo} 
+            alt={COMPANY_INFO.name} 
+            className="h-10 w-auto mr-3"
+          />
           <h1 className="text-2xl font-bold text-white">
-            WallPanels
+            {COMPANY_INFO.name}
           </h1>
         </div>
 

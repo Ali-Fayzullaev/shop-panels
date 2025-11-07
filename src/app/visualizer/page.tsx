@@ -12,7 +12,6 @@ export default function VisualizerPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <VisualizerHero />
       <VisualizerContent />
     </div>
   );

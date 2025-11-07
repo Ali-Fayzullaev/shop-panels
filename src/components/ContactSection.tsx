@@ -2,21 +2,15 @@
 
 import React from 'react';
 import { MapPin, Phone, Clock } from 'lucide-react';
+import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
 const locations = [
   {
     id: 1,
     title: "Главный офис",
-    address: "ТЦ Декоратор, Рязанский проспект 2, корп. 3, этаж 2",
-    phone: "+7 (993) 702-17-64",
-    hours: "Пн-Пт: 9:00 - 18:00, Сб-Вс: 10:00 - 17:00"
-  },
-  {
-    id: 2,
-    title: "Шоурум",
-    address: "г. Москва, ТЦ Галерея ремонта, МКАД 47 км",
-    phone: "+7 (993) 702-17-64",
-    hours: "Пн-Вс: 10:00 - 20:00"
+    address: COMPANY_INFO.address,
+    phone: COMPANY_INFO.phone,
+    hours: COMPANY_INFO.workingHours
   }
 ];
 
@@ -78,10 +72,10 @@ export function ContactSection() {
               <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0" />
                 <a 
-                  href="tel:+79937021764" 
+                  href={formatPhoneForCall(COMPANY_INFO.phoneClean)} 
                   className="text-lg font-semibold hover:text-gray-300 transition-colors"
                 >
-                  +7 (993) 702-17-64
+                  {COMPANY_INFO.phone}
                 </a>
               </div>
             </div>
@@ -109,7 +103,7 @@ export function ContactSection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+79937021764"
+              href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
               className="inline-flex items-center justify-center px-6 py-3 bg-[#333333] hover:bg-[#333333]/80 text-white font-semibold rounded-lg transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />

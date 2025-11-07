@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import { ContactsHero } from "@/components/ContactsHero";
 import { ContactsContent } from "@/components/ContactsContent";
+import { COMPANY_INFO } from "@/lib/company-info";
 
 export const metadata: Metadata = {
-  title: "Контакты - Стеновые панели",
-  description: "Свяжитесь с нами для консультации и заказа стеновых панелей. Офисы в Москве, доставка по всей России. Телефон: +7 (993) 702-17-64",
+  title: `Контакты - ${COMPANY_INFO.name}`,
+  description: `Свяжитесь с нами для консультации и заказа стеновых панелей. Офис в Астане, доставка по всему Казахстану. Телефон: ${COMPANY_INFO.phone}`,
 };
 
 export default function ContactsPage() {
