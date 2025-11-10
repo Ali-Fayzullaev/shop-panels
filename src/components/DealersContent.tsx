@@ -470,7 +470,7 @@ export function DealersContent() {
                         };
                         window.open(cityLinks[dealer.city] || `https://yandex.ru/maps/?text=${encodeURIComponent(dealer.address)}`, '_blank');
                       }}
-                      className="group w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
+                      className="group w-full py-3 px-4 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
                     >
                       <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
                         <MapPin className="h-3 w-3" />

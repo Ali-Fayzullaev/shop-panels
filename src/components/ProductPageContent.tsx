@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice, type Product, type Category } from "@/data/types";
+import { useCart } from "@/contexts/CartContext";
 
 interface ProductPageProps {
   product: Product;
@@ -17,9 +18,17 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
   const [activeTab, setActiveTab] = useState("about");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedThickness, setSelectedThickness] = useState(0);
+  const { addToCart } = useCart();
 
   // Получаем все изображения товара
   const allImages = product.images || [product.image];
+  
+  // Получаем выбранную толщину
+  const selectedThicknessValue = product.specifications?.thickness?.[selectedThickness];
+
+  const handleAddToCart = () => {
+    addToCart(product, selectedThicknessValue);
+  };
 
   const breadcrumbs = [
     { label: "Главная", href: "/" },
@@ -203,7 +212,11 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
 
             {/* Кнопка добавить в корзину */}
             <div className="pt-6">
-              <Button size="lg" className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 text-lg">
+              <Button 
+                size="lg" 
+                className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 text-lg"
+                onClick={handleAddToCart}
+              >
                 Добавить в корзину
               </Button>
             </div>
