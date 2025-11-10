@@ -1,0 +1,313 @@
+{
+  "categories": {
+    "bambukovye-paneli": {
+      "id": "bambukovye-paneli",
+      "name": "Бамбуковые панели",
+      "description": "Экологически чистые панели из натурального бамбука для создания уютной атмосферы",
+      "image": "/images/wall.png",
+      "products": [
+        {
+          "id": "bamboo-classic-01",
+          "name": "Стеновая панель: бамбуковая классик",
+          "sku": "BAMB001",
+          "price": 12000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall01.png",
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["5 мм", "8 мм"],
+            "material": "Натуральный бамбук",
+            "finish": "Лакированная поверхность"
+          },
+          "description": "Классическая бамбуковая панель с естественной текстурой"
+        },
+        {
+          "id": "bamboo-textured-02",
+          "name": "Стеновая панель: бамбуковая текстурированная",
+          "sku": "BAMB002", 
+          "price": 14500,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall02.png",
+          "images": ["/wall/wall02.png", "/wall/wall03.png", "/wall/wall04.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["5 мм", "8 мм"],
+            "material": "Прессованный бамбук",
+            "finish": "Рифленая текстура"
+          },
+          "description": "Текстурированная бамбуковая панель с объемным рисунком"
+        },
+        {
+          "id": "bamboo-premium-03",
+          "name": "Стеновая панель: бамбуковая премиум",
+          "sku": "BAMB003",
+          "price": 18000,
+          "currency": "₸", 
+          "unit": "1 шт",
+          "image": "/wall/wall03.png",
+          "images": ["/wall/wall03.png", "/wall/wall04.png", "/wall/wall05.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["8 мм", "12 мм"],
+            "material": "Элитный бамбук",
+            "finish": "Матовое покрытие"
+          },
+          "description": "Премиальная бамбуковая панель высочайшего качества"
+        }
+      ]
+    },
+    "riflenye-paneli": {
+      "id": "riflenye-paneli",
+      "name": "Рифленые панели",
+      "description": "Стильные рифленые панели с текстурированной поверхностью для современного интерьера",
+      "image": "/images/wall1.jpg",
+      "products": [
+        {
+          "id": "rifled-vertical-01",
+          "name": "Стеновая панель: рифленая вертикальная",
+          "sku": "RIFL001",
+          "price": 10500,
+          "currency": "₸",
+          "unit": "1 шт", 
+          "image": "/wall/wall04.png",
+          "images": ["/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["5 мм", "8 мм"],
+            "material": "МДФ с покрытием",
+            "finish": "Вертикальные рифли"
+          },
+          "description": "Рифленая панель с вертикальными линиями"
+        },
+        {
+          "id": "rifled-horizontal-02",
+          "name": "Стеновая панель: рифленая горизонтальная", 
+          "sku": "RIFL002",
+          "price": 11000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall05.png",
+          "images": ["/wall/wall05.png", "/wall/wall06.png", "/wall/wall07.png"],
+          "specifications": {
+            "size": "1100×2800 мм", 
+            "thickness": ["5 мм", "8 мм"],
+            "material": "МДФ высокой плотности",
+            "finish": "Горизонтальные рифли"
+          },
+          "description": "Рифленая панель с горизонтальными линиями"
+        },
+        {
+          "id": "rifled-diagonal-03",
+          "name": "Стеновая панель: рифленая диагональная",
+          "sku": "RIFL003", 
+          "price": 13500,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall06.png",
+          "images": ["/wall/wall06.png", "/wall/wall07.png", "/wall/wall08.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["8 мм", "12 мм"],
+            "material": "Композитный материал",
+            "finish": "Диагональные рифли"
+          },
+          "description": "Эксклюзивная рифленая панель с диагональным узором"
+        }
+      ]
+    },
+    "paneli-s-3d-pechatyu": {
+      "id": "paneli-s-3d-pechatyu", 
+      "name": "Панели с 3D печатью",
+      "description": "Инновационные панели с объемными узорами и уникальными дизайнерскими решениями",
+      "image": "/images/wall2.png",
+      "products": [
+        {
+          "id": "3d-geometric-01",
+          "name": "Стеновая панель: 3D геометрическая",
+          "sku": "3D001",
+          "price": 22000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall07.png", 
+          "images": ["/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["8 мм", "12 мм", "15 мм"],
+            "material": "Полимерный композит",
+            "finish": "3D текстура"
+          },
+          "description": "Панель с объемными геометрическими узорами"
+        },
+        {
+          "id": "3d-nature-02", 
+          "name": "Стеновая панель: 3D природная",
+          "sku": "3D002",
+          "price": 25000,
+          "currency": "₸", 
+          "unit": "1 шт",
+          "image": "/wall/wall08.png",
+          "images": ["/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["12 мм", "15 мм"],
+            "material": "Эко-композит", 
+            "finish": "Природная 3D текстура"
+          },
+          "description": "Панель с объемными природными мотивами"
+        }
+      ]
+    },
+    "alum": {
+      "id": "alum",
+      "name": "Вспененный алюминий", 
+      "description": "Легкие и прочные панели из вспененного алюминия для промышленного дизайна",
+      "image": "/images/wall3.png",
+      "products": [
+        {
+          "id": "alum-classic-01",
+          "name": "Панель: вспененный алюминий классик",
+          "sku": "ALUM001",
+          "price": 16000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall09.jpg",
+          "images": ["/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["3 мм", "5 мм", "8 мм"], 
+            "material": "Вспененный алюминий",
+            "finish": "Анодированное покрытие"
+          },
+          "description": "Легкая и прочная алюминиевая панель"
+        },
+        {
+          "id": "alum-textured-02",
+          "name": "Панель: вспененный алюминий с текстурой",
+          "sku": "ALUM002", 
+          "price": 19500,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall10.png",
+          "images": ["/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["5 мм", "8 мм"],
+            "material": "Текстурированный алюминий",
+            "finish": "Рельефная поверхность"
+          },
+          "description": "Алюминиевая панель с объемной текстурой"
+        }
+      ]
+    },
+    "flexible": {
+      "id": "flexible",
+      "name": "Гибкая керамика",
+      "description": "Революционная гибкая керамика для создания криволинейных поверхностей", 
+      "image": "/images/wall4.png",
+      "products": [
+        {
+          "id": "flex-ceramic-01",
+          "name": "Панель: гибкая керамика стандарт",
+          "sku": "FLEX001",
+          "price": 28000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall11.png",
+          "images": ["/wall/wall11.png", "/wall/wall12.png", "/wall/wall01.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["2 мм", "3 мм"],
+            "material": "Керамический композит", 
+            "finish": "Глянцевая поверхность"
+          },
+          "description": "Инновационная гибкая керамическая панель"
+        }
+      ]
+    },
+    "montazhnye-profili": {
+      "id": "montazhnye-profili",
+      "name": "Монтажные профили",
+      "description": "Качественные монтажные системы и профили для профессиональной установки",
+      "image": "/images/wall5.jpg", 
+      "products": [
+        {
+          "id": "profile-standard-01",
+          "name": "Профиль монтажный стандартный",
+          "sku": "PROF001",
+          "price": 2500,
+          "currency": "₸",
+          "unit": "1 м.п.",
+          "image": "/wall/wall12.png",
+          "images": ["/wall/wall12.png", "/wall/wall01.png", "/wall/wall02.png"],
+          "specifications": {
+            "size": "30×20 мм",
+            "length": "3000 мм", 
+            "material": "Алюминий",
+            "finish": "Анодированное покрытие"
+          },
+          "description": "Универсальный монтажный профиль"
+        }
+      ]
+    },
+    "sale": {
+      "id": "sale",
+      "name": "Акции и скидки",
+      "description": "Выгодные предложения и скидки на популярные стеновые панели. Экономьте до 50%!",
+      "image": "/images/wall6.png", 
+      "isSpecial": true,
+      "products": [
+        {
+          "id": "sale-bamboo-01",
+          "name": "АКЦИЯ: Бамбуковая панель классик",
+          "sku": "SALE001", 
+          "price": 8000,
+          "originalPrice": 12000,
+          "discount": 33,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall01.png",
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["5 мм", "8 мм"],
+            "material": "Натуральный бамбук",
+            "finish": "Лакированная поверхность"
+          },
+          "description": "Классическая бамбуковая панель по акционной цене",
+          "saleInfo": {
+            "isOnSale": true,
+            "saleEndDate": "2025-12-31",
+            "badge": "СКИДКА 33%"
+          }
+        },
+        {
+          "id": "sale-rifled-01", 
+          "name": "АКЦИЯ: Рифленая панель вертикальная",
+          "sku": "SALE002",
+          "price": 7500,
+          "originalPrice": 10500,
+          "discount": 29,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall04.png",
+          "images": ["/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png"],
+          "specifications": {
+            "size": "1100×2800 мм", 
+            "thickness": ["5 мм", "8 мм"],
+            "material": "МДФ с покрытием",
+            "finish": "Вертикальные рифли"
+          },
+          "description": "Рифленая панель со скидкой до конца года",
+          "saleInfo": {
+            "isOnSale": true,
+            "saleEndDate": "2025-12-31",
+            "badge": "СКИДКА 29%"
+          }
+        }
+      ]
+    }
+  }
+}

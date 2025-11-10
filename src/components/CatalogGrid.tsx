@@ -3,6 +3,8 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Badge } from "./ui/badge"
+import { getAllCategories, type Category } from "@/data/types"
+import productsData from "@/data/products.json"
 
 interface CatalogItem {
   id: string
@@ -11,60 +13,23 @@ interface CatalogItem {
   image: string
   href: string
   isSpecial?: boolean
+  productsCount?: number
 }
 
-const catalogItems: CatalogItem[] = [
-  {
-    id: "bamboo",
-    title: "Бамбуковые панели",
-    description: "Экологически чистые панели из натурального бамбука для создания уютной атмосферы",
-    image: "/images/wall.png",
-    href: "/bambukovye-paneli"
-  },
-  {
-    id: "rifled",
-    title: "Рифленые панели",
-    description: "Стильные рифленые панели с текстурированной поверхностью для современного интерьера",
-    image: "/images/wall1.jpg",
-    href: "/riflenye-paneli"
-  },
-  {
-    id: "3d-print",
-    title: "Панели с 3D печатью",
-    description: "Инновационные панели с объемными узорами и уникальными дизайнерскими решениями",
-    image: "/images/wall2.png",
-    href: "/paneli-s-3d-pechatyu"
-  },
-  {
-    id: "aluminum",
-    title: "Вспененный алюминий",
-    description: "Легкие и прочные панели из вспененного алюминия для промышленного дизайна",
-    image: "/images/wall3.png",
-    href: "/alum"
-  },
-  {
-    id: "flexible",
-    title: "Гибкая керамика",
-    description: "Революционная гибкая керамика для создания криволинейных поверхностей",
-    image: "/images/wall4.png",
-    href: "/flexible"
-  },
-  {
-    id: "profiles",
-    title: "Монтажные профили",
-    description: "Качественные монтажные системы и профили для профессиональной установки",
-    image: "/images/wall5.jpg",
-    href: "/montazhnye-profili"
-  },
-  {
-    id: "sale",
-    title: "Акции и скидки",
-    description: "Выгодные предложения и скидки на популярные стеновые панели. Экономьте до 50%!",
-    image: "/images/wall6.png",
-    href: "/sale",
-    isSpecial: true
-  }
-]
+// Получаем категории из JSON файла
+const getCategories = (): Category[] => {
+  return Object.values(productsData.categories as any)
+}
+
+const catalogItems: CatalogItem[] = getCategories().map(category => ({
+  id: category.id,
+  title: category.name,
+  description: category.description,
+  image: category.image,
+  href: `/${category.id}`,
+  isSpecial: category.isSpecial || false,
+  productsCount: category.products.length
+}))
 
 export function CatalogGrid() {
   return (
@@ -100,10 +65,15 @@ export function CatalogGrid() {
                   />
                   
                   {/* Оверлей с названием */}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 transition-opacity">
-                    <h3 className="text-white text-xl md:text-2xl font-bold text-center px-4">
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-100 transition-opacity">
+                    <h3 className="text-white text-xl md:text-2xl font-bold text-center px-4 mb-2">
                       {item.title}
                     </h3>
+                    {item.productsCount && (
+                      <div className="text-white text-sm bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                        {item.productsCount} товар{item.productsCount > 1 && item.productsCount < 5 ? 'а' : item.productsCount === 1 ? '' : 'ов'}
+                      </div>
+                    )}
                   </div>
 
                   {/* Бейджи скидок для sale */}
