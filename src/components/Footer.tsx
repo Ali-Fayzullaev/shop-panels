@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { ChevronUp, Phone, Mail, MapPin, Instagram, MessageCircle, Send } from 'lucide-react';
 import { COMPANY_INFO, formatPhoneForCall, formatPhoneForWhatsApp } from "@/lib/company-info";
 
@@ -46,13 +47,13 @@ export function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Каталог</h3>
             <ul className="space-y-2">
-              <li><a href="/catalog/bambukovye-paneli" className="text-gray-300 hover:text-white transition-colors">Бамбуковые панели</a></li>
-              <li><a href="/catalog/riflenye-paneli" className="text-gray-300 hover:text-white transition-colors">Рифленые панели</a></li>
-              <li><a href="/catalog/derevyannye-paneli" className="text-gray-300 hover:text-white transition-colors">Деревянные панели</a></li>
-              <li><a href="/catalog/3d-paneli" className="text-gray-300 hover:text-white transition-colors">3D панели</a></li>
-              <li><a href="/catalog/mdf-paneli" className="text-gray-300 hover:text-white transition-colors">MDF панели</a></li>
-              <li><a href="/catalog/gipsovye-paneli" className="text-gray-300 hover:text-white transition-colors">Гипсовые панели</a></li>
-              <li><a href="/catalog/sale" className="text-gray-300 hover:text-white transition-colors">Распродажа</a></li>
+              <li><Link href="/bambukovye-paneli" className="text-gray-300 hover:text-white transition-colors">Бамбуковые панели</Link></li>
+              <li><Link href="/riflenye-paneli" className="text-gray-300 hover:text-white transition-colors">Рифленые панели</Link></li>
+              <li><Link href="/paneli-s-3d-pechatyu" className="text-gray-300 hover:text-white transition-colors">3D панели</Link></li>
+              <li><Link href="/alum" className="text-gray-300 hover:text-white transition-colors">Вспененный алюминий</Link></li>
+              <li><Link href="/flexible" className="text-gray-300 hover:text-white transition-colors">Гибкая керамика</Link></li>
+              <li><Link href="/montazhnye-profili" className="text-gray-300 hover:text-white transition-colors">Монтажные профили</Link></li>
+              <li><Link href="/sale" className="text-gray-300 hover:text-white transition-colors">Акции</Link></li>
             </ul>
           </div>
 

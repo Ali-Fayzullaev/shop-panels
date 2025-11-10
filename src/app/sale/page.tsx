@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ const saleItems = [
 export default function SalePage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+
       <main className="pt-6">
         {/* Hero секция с акциями */}
         <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-16">

@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+
 import PageHero from "@/components/PageHero";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export default function BambooPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+
       <PageHero 
         title="Бамбуковые панели"
         description="Экологичные и стильные бамбуковые панели для создания уютного и современного интерьера"

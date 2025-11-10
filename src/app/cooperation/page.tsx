@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
 import { CooperationHero } from "@/components/CooperationHero";
 import { CooperationContent } from "@/components/CooperationContent";
 
@@ -11,7 +10,6 @@ export const metadata: Metadata = {
 export default function CooperationPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <CooperationHero />
       <CooperationContent />
     </div>

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
-import { VisualizerHero } from "@/components/VisualizerHero";
 import { VisualizerContent } from "@/components/VisualizerContent";
 
 export const metadata: Metadata = {
@@ -10,8 +8,7 @@ export const metadata: Metadata = {
 
 export default function VisualizerPage() {
   return (
-    <div className="h-[59vh] lg:min-h-screen bg-white">
-      <Header />
+    <div className=" lg:min-h-screen bg-white">
       <VisualizerContent />
     </div>
   );

@@ -1,8 +1,11 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import { Palette, Settings } from 'lucide-react';
+import { Image as ImageIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+
+// Типы для зон
+type ZoneType = 'leftWall' | 'centerPanel' | 'rightWall';
 
 // 🖼️ ПАЛИТРА КАРТИН — 12 штук
 const picturePalette = [
@@ -21,199 +24,199 @@ const picturePalette = [
 ];
 
 export function VisualizerContent() {
-  // 🔲 Состояния для каждой зоны — теперь хранят ID картины
   const [pictures, setPictures] = useState({
     leftWall: picturePalette[0].src,
     centerPanel: picturePalette[1].src,
     rightWall: picturePalette[2].src,
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [leftModalOpen, setLeftModalOpen] = useState(false);
+  const [centerModalOpen, setCenterModalOpen] = useState(false);
+  const [rightModalOpen, setRightModalOpen] = useState(false);
 
-  // 🖼️ Путь к PNG дивана (прозрачный фон!)
-  const sofaImageUrl = "/vez/img01.webp"; // ← ЗАМЕНИ НА PNG С ПРОЗРАЧНОСТЬЮ!
+  const sofaImageUrl = "/vez/img01.webp";
+
+  // Универсальный обработчик выбора
+  const handleSelectPicture = (zone: ZoneType, src: string) => {
+    setPictures(prev => ({ ...prev, [zone]: src }));
+  };
+
+  // Универсальная модалка
+  const PictureModal = ({ isOpen, onClose, zone, currentSrc }: {
+    isOpen: boolean;
+    onClose: () => void;
+    zone: ZoneType;
+    currentSrc: string;
+  }) => {
+    if (!isOpen) return null;
+
+    const zoneNames: Record<ZoneType, string> = {
+      leftWall: 'Левая стена',
+      centerPanel: 'Центральная панель',
+      rightWall: 'Правая стена',
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-[#333333]">{zoneNames[zone]}</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {picturePalette.map((pic) => (
+              <div
+                key={`modal-${pic.id}`}
+                onClick={() => {
+                  handleSelectPicture(zone, pic.src);
+                  onClose();
+                }}
+                className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                  currentSrc === pic.src
+                    ? 'border-[#333333] bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="w-full h-12 rounded-md overflow-hidden border">
+                  <img
+                    src={pic.src}
+                    alt={pic.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-center text-[#333333] truncate">
+                  {pic.name}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t">
+            <Button
+              variant="outline"
+              className="w-full text-[#333333] border-[#333333] hover:bg-[#333333] hover:text-white"
+              onClick={() => {
+                // Сбросить на первую картину
+                const defaultSrc = picturePalette[0].src;
+                handleSelectPicture(zone, defaultSrc);
+                onClose();
+              }}
+            >
+              Сбросить
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section className="relative h-[50vh] lg:min-h-screen bg-gray-50 overflow-hidden">
-      {/* 🔥 ФОН РАЗДЕЛЁН НА ЗОНЫ — ТЕПЕРЬ С КАРТИНАМИ */}
+      {/* 🔥 ФОН РАЗДЕЛЁН НА ЗОНЫ */}
       <div className="absolute inset-0 flex">
 
         {/* 🟢 ЛЕВАЯ СТЕНА */}
-        <div 
-          className="flex-1"
-          style={{
-            backgroundImage: `url('${pictures.leftWall}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transition: 'background-image 0.3s ease'
-          }}
-        />
+        <div className="flex-1 relative">
+          <div
+            style={{
+              backgroundImage: `url('${pictures.leftWall}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+          {/* Иконка для левой стены */}
+          <button
+            onClick={() => setLeftModalOpen(true)}
+            className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+            title="Выбрать картину для левой стены"
+          >
+            <ImageIcon className="h-5 w-5 text-[#333333]" />
+          </button>
+        </div>
 
-        {/* 🟡 ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (где диван) */}
-        <div 
-          className="w-[50%] md:w-[40%]"
-          style={{
-            backgroundImage: `url('${pictures.centerPanel}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transition: 'background-image 0.3s ease'
-          }}
-        />
+        {/* 🟡 ЦЕНТРАЛЬНАЯ ПАНЕЛЬ */}
+        <div className="w-[50%] md:w-[40%] relative">
+          <div
+            style={{
+              backgroundImage: `url('${pictures.centerPanel}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+          {/* Иконка для центра */}
+          <button
+            onClick={() => setCenterModalOpen(true)}
+            className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+            title="Выбрать картину для центральной панели"
+          >
+            <ImageIcon className="h-5 w-5 text-[#333333]" />
+          </button>
+        </div>
 
         {/* 🔵 ПРАВАЯ СТЕНА */}
-        <div 
-          className="flex-1"
-          style={{
-            backgroundImage: `url('${pictures.rightWall}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transition: 'background-image 0.3s ease'
-          }}
-        />
+        <div className="flex-1 relative">
+          <div
+            style={{
+              backgroundImage: `url('${pictures.rightWall}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+          {/* Иконка для правой стены */}
+          <button
+            onClick={() => setRightModalOpen(true)}
+            className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-md"
+            title="Выбрать картину для правой стены"
+          >
+            <ImageIcon className="h-5 w-5 text-[#333333]" />
+          </button>
+        </div>
 
       </div>
 
-      {/* 💡 КНОПКА "НАСТРОИТЬ ЗОНЫ" */}
-      <div className="absolute top-4 right-4 z-50">
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#333333] hover:bg-gray-700 text-white flex items-center gap-2"
-        >
-          <Settings className="h-4 w-4" />
-          Настроить зоны
-        </Button>
-      </div>
-
-      {/* 🛋️ ДИВАН — ПО ЦЕНТРУ, АДАПТИВНЫЙ */}
+      {/* 🛋️ ДИВАН */}
       <div className="flex items-end justify-center h-[50vh] lg:h-screen">
         <div className="relative max-w-full max-h-full">
           <img
             src={sofaImageUrl}
             alt="Диван"
             className="max-w-[100vw] object-contain"
-            style={{ filter: 'drop-shadow(0 0px 0px rgba(0,0,0,0.1))' }}
+            style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}
           />
         </div>
       </div>
 
-      {/* 🎨 МОДАЛЬНОЕ ОКНО С ВЫБОРОМ КАРТИН */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-[#333333]">Выберите картину</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* 🟢 ЛЕВАЯ СТЕНА */}
-            <div className="mb-6">
-              <h4 className="font-medium text-[#333333] mb-3">Левая стена</h4>
-              <div className="grid grid-cols-3 gap-3">
-                {picturePalette.map((pic) => (
-                  <div
-                    key={`left-${pic.id}`}
-                    onClick={() => setPictures(prev => ({ ...prev, leftWall: pic.src }))}
-                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
-                      pictures.leftWall === pic.src
-                        ? 'border-[#333333] bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="w-full h-12 rounded-md overflow-hidden border">
-                      <img
-                        src={pic.src}
-                        alt={pic.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
-                      {pic.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 🟡 ЦЕНТРАЛЬНАЯ ПАНЕЛЬ */}
-            <div className="mb-6">
-              <h4 className="font-medium text-[#333333] mb-3">Центральная панель</h4>
-              <div className="grid grid-cols-3 gap-3">
-                {picturePalette.map((pic) => (
-                  <div
-                    key={`center-${pic.id}`}
-                    onClick={() => setPictures(prev => ({ ...prev, centerPanel: pic.src }))}
-                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
-                      pictures.centerPanel === pic.src
-                        ? 'border-[#333333] bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="w-full h-12 rounded-md overflow-hidden border">
-                      <img
-                        src={pic.src}
-                        alt={pic.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
-                      {pic.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 🔵 ПРАВАЯ СТЕНА */}
-            <div className="mb-6">
-              <h4 className="font-medium text-[#333333] mb-3">Правая стена</h4>
-              <div className="grid grid-cols-3 gap-3">
-                {picturePalette.map((pic) => (
-                  <div
-                    key={`right-${pic.id}`}
-                    onClick={() => setPictures(prev => ({ ...prev, rightWall: pic.src }))}
-                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
-                      pictures.rightWall === pic.src
-                        ? 'border-[#333333] bg-gray-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="w-full h-12 rounded-md overflow-hidden border">
-                      <img
-                        src={pic.src}
-                        alt={pic.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-center text-[#333333] truncate">
-                      {pic.name}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 💡 КНОПКА СБРОСА */}
-            <div className="pt-4 border-t">
-              <Button
-                variant="outline"
-                className="w-full text-[#333333] border-[#333333] hover:bg-[#333333] hover:text-white"
-                onClick={() => setPictures({
-                  leftWall: picturePalette[0].src,
-                  centerPanel: picturePalette[1].src,
-                  rightWall: picturePalette[2].src,
-                })}
-              >
-                Сбросить
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ✨ МОДАЛКИ */}
+      <PictureModal
+        isOpen={leftModalOpen}
+        onClose={() => setLeftModalOpen(false)}
+        zone="leftWall"
+        currentSrc={pictures.leftWall}
+      />
+      <PictureModal
+        isOpen={centerModalOpen}
+        onClose={() => setCenterModalOpen(false)}
+        zone="centerPanel"
+        currentSrc={pictures.centerPanel}
+      />
+      <PictureModal
+        isOpen={rightModalOpen}
+        onClose={() => setRightModalOpen(false)}
+        zone="rightWall"
+        currentSrc={pictures.rightWall}
+      />
     </section>
   );
 }

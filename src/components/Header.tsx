@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -21,7 +22,7 @@ const Header = () => {
       {/* Navigation */}
       <nav className="flex items-center justify-between p-6 lg:px-8">
         {/* Logo */}
-        <div className="flex items-center">
+        <Link href="/" className="flex items-center">
           <img 
             src={COMPANY_INFO.logo} 
             alt={COMPANY_INFO.name} 
@@ -30,7 +31,7 @@ const Header = () => {
           <h1 className="text-2xl font-bold text-white">
             {COMPANY_INFO.name}
           </h1>
-        </div>
+        </Link>
 
         {/* Navigation Menu */}
         <NavigationMenu className="hidden lg:flex" delayDuration={200}>
@@ -42,48 +43,48 @@ const Header = () => {
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
                 <div className="grid w-[280px] gap-1 p-3 grid-cols-1 bg-white shadow-lg border rounded-md">
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  <Link 
                     href="/bambukovye-paneli"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Бамбуковые панели
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/riflenye-paneli"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Рифленые панели
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/paneli-s-3d-pechatyu"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Панели с 3D печатью
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/alum"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Вспененный алюминий
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/flexible"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Гибкая керамика
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/montazhnye-profili"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Монтажные профили
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
+                  </Link>
+                  <Link 
                     href="/sale"
+                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
                   >
                     Акции
-                  </NavigationMenuLink>
+                  </Link>
                 </div>
               </NavigationMenuContent>
             </NavigationMenuItem>
@@ -95,77 +96,71 @@ const Header = () => {
               </NavigationMenuTrigger>
               <NavigationMenuContent className="z-50">
                 <div className="grid w-[200px] gap-1 p-3 grid-cols-1 bg-white shadow-lg border rounded-md">
-                  <NavigationMenuLink
+                  <Link 
+                    href="/sale"
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/promotions"
                   >
                     Акции
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
+                  </Link>
+                  <Link 
+                    href="/catalog"
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/info"
                   >
-                    Информация
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
+                    Каталог
+                  </Link>
+                  <Link 
+                    href="/visualizer"
                     className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/gallery"
                   >
-                    Галерея
-                  </NavigationMenuLink>
-                  <NavigationMenuLink
-                    className="block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 text-sm font-medium text-gray-900"
-                    href="/about"
-                  >
-                    О нас
-                  </NavigationMenuLink>
+                    Визуализатор
+                  </Link>
                 </div>
               </NavigationMenuContent>
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <NavigationMenuLink
+              <Link
+                href="/visualizer"
                 className={cn(
                   navigationMenuTriggerStyle(),
                   "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
-                href="/visualizer"
               >
                 Визуализатор
-              </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
+              <Link
+                href="/cooperation"
                 className={cn(
                   navigationMenuTriggerStyle(),
                   "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
-                href="/cooperation"
               >
                 Сотрудничество
-              </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
+              <Link
+                href="/dealers"
                 className={cn(
                   navigationMenuTriggerStyle(),
                   "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
-                href="/dealers"
               >
                 Дилеры
-              </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
+              <Link
+                href="/contacts"
                 className={cn(
                   navigationMenuTriggerStyle(),
                   "text-white hover:text-white hover:bg-white/10 bg-transparent"
                 )}
-                href="/contacts"
               >
                 Контакты
-              </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
@@ -182,10 +177,10 @@ const Header = () => {
               <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
             </svg>
             <a
-              href="tel:87751101800"
+              href={`tel:${COMPANY_INFO.phoneClean}`}
               className="text-sm font-medium hover:text-white/80"
             >
-              8 (775) 110 1800
+              {COMPANY_INFO.phone}
             </a>
           </div>
 

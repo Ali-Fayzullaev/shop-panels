@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { MapPin, Phone, Building, User } from 'lucide-react';
 import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
@@ -500,12 +501,12 @@ export function DealersContent() {
               <Phone className="h-5 w-5 mr-2" />
               Связаться с нами
             </a>
-            <a
+            <Link
               href="/contacts"
               className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-[#333333] transition-colors"
             >
               Подробнее
-            </a>
+            </Link>
           </div>
         </div>
       </div>

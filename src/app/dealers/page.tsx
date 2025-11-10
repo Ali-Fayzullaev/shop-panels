@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
+
 import { DealersHero } from "@/components/DealersHero";
 import { DealersContent } from "@/components/DealersContent";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function DealersPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+
       <DealersHero />
       <DealersContent />
     </div>

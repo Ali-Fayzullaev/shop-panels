@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+
 import PageHero from "@/components/PageHero";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export default function RifledPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+
       <PageHero 
         title="Рифленые панели"
         description="Стильные рифленые панели с фактурной поверхностью для создания оригинального интерьера"

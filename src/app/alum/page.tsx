@@ -1,11 +1,11 @@
-import Header from "@/components/Header";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function AlumPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+
       <main className="pt-6">
         <div className="container mx-auto px-4 py-8">
           <nav className="text-sm text-gray-500 mb-8">
