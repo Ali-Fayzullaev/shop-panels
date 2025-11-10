@@ -15,6 +15,11 @@ interface ProductPageProps {
 
 export function ProductPageContent({ product, category }: ProductPageProps) {
   const [activeTab, setActiveTab] = useState("about");
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedThickness, setSelectedThickness] = useState(0);
+
+  // Получаем все изображения товара
+  const allImages = product.images || [product.image];
 
   const breadcrumbs = [
     { label: "Главная", href: "/" },
@@ -49,14 +54,15 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
 
       <main className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Изображения товара */}
+          {/* Галерея изображений с каруселью */}
           <div className="space-y-4">
-            <div className="relative aspect-square overflow-hidden bg-gray-100 rounded-lg border">
+            {/* Основное изображение */}
+            <div className="relative aspect-square overflow-hidden bg-gray-100 border">
               <Image
-                src={product.image}
-                alt={product.name}
+                src={allImages[selectedImageIndex]}
+                alt={`${product.name} - изображение ${selectedImageIndex + 1}`}
                 fill
-                className="object-cover"
+                className="object-cover transition-all duration-300"
               />
               
               {product.saleInfo?.isOnSale && (
@@ -66,20 +72,35 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
                   </Badge>
                 </div>
               )}
-            </div>
-            
-            {/* Дополнительные изображения */}
-            <div className="grid grid-cols-3 gap-4">
-              {product.images && product.images.slice(1).map((img, index) => (
-                <div key={index} className="relative aspect-square overflow-hidden bg-gray-100 rounded-lg border">
-                  <Image
-                    src={img}
-                    alt={`${product.name} ${index + 2}`}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform cursor-pointer"
-                  />
+
+              {/* Стрелки для переключения */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImageIndex(selectedImageIndex === 0 ? allImages.length - 1 : selectedImageIndex - 1)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2  transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setSelectedImageIndex(selectedImageIndex === allImages.length - 1 ? 0 : selectedImageIndex + 1)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2  transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Индикатор количества изображений */}
+              {allImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1  text-sm">
+                  {selectedImageIndex + 1} / {allImages.length}
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -131,20 +152,54 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
               <h3 className="text-lg font-semibold text-gray-900">Толщина</h3>
               <div className="flex flex-wrap gap-2">
                 {product.specifications?.thickness?.map((thickness, index) => (
-                  <label key={index} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="thickness"
-                      defaultChecked={index === 0}
-                      className="sr-only peer"
-                    />
-                    <div className="px-4 py-3 border-2 border-gray-200 rounded-lg peer-checked:border-black peer-checked:bg-black peer-checked:text-white hover:border-gray-300 transition-colors">
-                      <span className="font-medium">{thickness}</span>
+                  <button
+                    key={index}
+                    onClick={() => setSelectedThickness(index)}
+                    className={`relative p-4 text-center border-2 transition-all duration-200 ${
+                      selectedThickness === index
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+                    }`}
+                  >
+                    <div className="text-xl font-bold text-gray-900 mb-1">{thickness}</div>
+                    
+                    {/* Индикатор выбора */}
+                    <div className={`absolute top-1 right-1 w-2 h-2  border-2 transition-all rounded-full ${
+                      selectedThickness === index
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300"
+                    }`}>
+                      <div className={`w-full h-full  bg-white transition-transform rounded-full ${
+                        selectedThickness === index ? "scale-50" : ""
+                      }`}></div>
                     </div>
-                  </label>
+                  </button>
                 ))}
               </div>
             </div>
+             {/* Миниатюры изображений */}
+            {allImages.length > 1 && (
+              <div className="grid grid-cols-6 gap-2">
+                {allImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative aspect-square overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === index 
+                        ? "border-black ring-2 ring-black/20" 
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} миниатюра ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Кнопка добавить в корзину */}
             <div className="pt-6">
@@ -221,7 +276,7 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
                     <li>• Экологическая безопасность</li>
                   </ul>
                   
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="mt-6 p-4 bg-gray-50 ">
                     <h5 className="font-semibold mb-2">Гарантия качества</h5>
                     <p className="text-sm text-gray-600">
                       На все наши изделия предоставляется официальная гарантия. 
@@ -270,7 +325,7 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
                       </ul>
                     </div>
                     
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div className="mt-6 p-4 bg-blue-50">
                       <h5 className="font-semibold mb-2">Гарантия возврата</h5>
                       <p className="text-sm text-gray-600">
                         Возврат товара в течение 14 дней при сохранении товарного вида и упаковки.
@@ -332,7 +387,7 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
                       </ul>
                     </div>
                     
-                    <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                    <div className="mt-6 p-4 bg-green-50 ">
                       <h5 className="font-semibold mb-2">Консультации бесплатно</h5>
                       <p className="text-sm text-gray-600">
                         Наши специалисты бесплатно проконсультируют по вопросам монтажа. 
@@ -357,7 +412,7 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
                 <Link
                   key={relatedProduct.id}
                   href={`/${category.id}/${relatedProduct.id}`}
-                  className="group block bg-white rounded-lg border overflow-hidden hover:shadow-lg transition-shadow"
+                  className="group block bg-white border overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative aspect-4/3 bg-gray-100">
                     <Image
