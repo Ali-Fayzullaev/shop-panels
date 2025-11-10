@@ -81,14 +81,18 @@ export function ProductGrid({ products, categoryId }: ProductGridProps) {
                   
                   {/* Доступные толщины */}
                   <div className="mt-3 flex flex-wrap gap-1">
-                    {product.specifications.thickness.map((thickness, index) => (
+                    {product.specifications?.thickness?.map((thickness, index) => (
                       <span
                         key={index}
                         className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
                       >
                         {thickness}
                       </span>
-                    ))}
+                    )) || (
+                      <span className="text-xs text-gray-500">
+                        Толщина не указана
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

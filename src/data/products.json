@@ -14,7 +14,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall01.png",
-          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["5 мм", "8 мм"],
@@ -31,7 +31,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall02.png",
-          "images": ["/wall/wall02.png", "/wall/wall03.png", "/wall/wall04.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["5 мм", "8 мм"],
@@ -48,7 +48,7 @@
           "currency": "₸", 
           "unit": "1 шт",
           "image": "/wall/wall03.png",
-          "images": ["/wall/wall03.png", "/wall/wall04.png", "/wall/wall05.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["8 мм", "12 мм"],
@@ -73,7 +73,7 @@
           "currency": "₸",
           "unit": "1 шт", 
           "image": "/wall/wall04.png",
-          "images": ["/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["5 мм", "8 мм"],
@@ -90,7 +90,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall05.png",
-          "images": ["/wall/wall05.png", "/wall/wall06.png", "/wall/wall07.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм", 
             "thickness": ["5 мм", "8 мм"],
@@ -107,7 +107,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall06.png",
-          "images": ["/wall/wall06.png", "/wall/wall07.png", "/wall/wall08.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["8 мм", "12 мм"],
@@ -132,7 +132,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall07.png", 
-          "images": ["/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["8 мм", "12 мм", "15 мм"],
@@ -149,7 +149,7 @@
           "currency": "₸", 
           "unit": "1 шт",
           "image": "/wall/wall08.png",
-          "images": ["/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["12 мм", "15 мм"],
@@ -174,7 +174,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall09.jpg",
-          "images": ["/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["3 мм", "5 мм", "8 мм"], 
@@ -191,7 +191,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall10.png",
-          "images": ["/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["5 мм", "8 мм"],
@@ -216,7 +216,24 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall11.png",
-          "images": ["/wall/wall11.png", "/wall/wall12.png", "/wall/wall01.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
+          "specifications": {
+            "size": "1100×2800 мм",
+            "thickness": ["2 мм", "3 мм"],
+            "material": "Керамический композит", 
+            "finish": "Глянцевая поверхность"
+          },
+          "description": "Инновационная гибкая керамическая панель"
+        },
+        {
+          "id": "flex-ceramic-02",
+          "name": "Панель: гибкая керамика стандарт",
+          "sku": "FLEX001",
+          "price": 28000,
+          "currency": "₸",
+          "unit": "1 шт",
+          "image": "/wall/wall12.png",
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["2 мм", "3 мм"],
@@ -241,12 +258,31 @@
           "currency": "₸",
           "unit": "1 м.п.",
           "image": "/wall/wall12.png",
-          "images": ["/wall/wall12.png", "/wall/wall01.png", "/wall/wall02.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "30×20 мм",
             "length": "3000 мм", 
             "material": "Алюминий",
-            "finish": "Анодированное покрытие"
+            "finish": "Анодированное покрытие",
+            "thickness": ["1.5 мм", "2.0 мм"]
+          },
+          "description": "Универсальный монтажный профиль"
+        },
+        {
+          "id": "profile-standard-02",
+          "name": "Профиль монтажный стандартный",
+          "sku": "PROF001",
+          "price": 5500,
+          "currency": "₸",
+          "unit": "1 м.п.",
+          "image": "/wall/wall11.png",
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
+          "specifications": {
+            "size": "30×20 мм",
+            "length": "3000 мм", 
+            "material": "Алюминий",
+            "finish": "Анодированное покрытие",
+            "thickness": ["1.5 мм", "2.0 мм"]
           },
           "description": "Универсальный монтажный профиль"
         }
@@ -269,7 +305,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall01.png",
-          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм",
             "thickness": ["5 мм", "8 мм"],
@@ -293,7 +329,7 @@
           "currency": "₸",
           "unit": "1 шт",
           "image": "/wall/wall04.png",
-          "images": ["/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png"],
+          "images": ["/wall/wall01.png", "/wall/wall02.png", "/wall/wall03.png","/wall/wall04.png", "/wall/wall05.png", "/wall/wall06.png","/wall/wall07.png", "/wall/wall08.png", "/wall/wall09.jpg", "/wall/wall10.png", "/wall/wall11.png", "/wall/wall12.png"],
           "specifications": {
             "size": "1100×2800 мм", 
             "thickness": ["5 мм", "8 мм"],
