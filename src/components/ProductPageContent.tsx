@@ -31,7 +31,7 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
   const inCart = isInCart(product.id, selectedThicknessValue);
 
   const handleAddToCart = () => {
-    addToCart(product, selectedThicknessValue);
+    addToCart(product, selectedThicknessValue, category.id);
   };
 
   const handleIncreaseQuantity = () => {

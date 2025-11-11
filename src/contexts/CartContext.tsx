@@ -8,6 +8,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedThickness?: string;
+  categoryId?: string;
 }
 
 interface CartState {
@@ -16,7 +17,7 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: "ADD_ITEM"; payload: { product: Product; thickness?: string } }
+  | { type: "ADD_ITEM"; payload: { product: Product; thickness?: string; categoryId?: string } }
   | { type: "REMOVE_ITEM"; payload: { productId: string; thickness?: string } }
   | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number; thickness?: string } }
   | { type: "CLEAR_CART" }
@@ -26,7 +27,7 @@ type CartAction =
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "ADD_ITEM": {
-      const { product, thickness } = action.payload;
+      const { product, thickness, categoryId } = action.payload;
       const existingItemIndex = state.items.findIndex(
         (item) => item.product.id === product.id && item.selectedThickness === thickness
       );
@@ -46,6 +47,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           product,
           quantity: 1,
           selectedThickness: thickness,
+          categoryId,
         };
         const updatedItems = [...state.items, newItem];
         return {
@@ -143,7 +145,7 @@ function loadCartFromStorage(): CartState | null {
 // Контекст
 interface CartContextType {
   state: CartState;
-  addToCart: (product: Product, thickness?: string) => void;
+  addToCart: (product: Product, thickness?: string, categoryId?: string) => void;
   removeFromCart: (productId: string, thickness?: string) => void;
   updateQuantity: (productId: string, quantity: number, thickness?: string) => void;
   clearCart: () => void;
@@ -177,8 +179,8 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   }, [state]);
 
-  const addToCart = (product: Product, thickness?: string) => {
-    dispatch({ type: "ADD_ITEM", payload: { product, thickness } });
+  const addToCart = (product: Product, thickness?: string, categoryId?: string) => {
+    dispatch({ type: "ADD_ITEM", payload: { product, thickness, categoryId } });
   };
 
   const removeFromCart = (productId: string, thickness?: string) => {

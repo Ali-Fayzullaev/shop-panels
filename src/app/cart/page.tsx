@@ -1,14 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/data/types";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, CheckCircle, AlertCircle } from "lucide-react";
+import { useOrder } from "@/hooks/useOrder";
 
 export default function CartPage() {
   const { state, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { isLoading, isSuccess, error, sendOrder, resetState } = useOrder();
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    phone: '',
+    email: '',
+  });
+  const [showContactForm, setShowContactForm] = useState(false);
+
+  const handleOrderSubmit = async () => {
+    await sendOrder(state.items, state.total, customerInfo);
+    if (!error) {
+      // Очищаем корзину после успешной отправки
+      setTimeout(() => {
+        clearCart();
+        setCustomerInfo({ name: '', phone: '', email: '' });
+        setShowContactForm(false);
+        resetState();
+      }, 3000);
+    }
+  };
 
   if (state.items.length === 0) {
     return (
@@ -162,15 +184,112 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <Button size="lg" className="w-full bg-black hover:bg-gray-800 mb-4 text-white">
-                  Оформить заказ
-                </Button>
+                {isSuccess ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center space-x-2 bg-green-50 border border-green-200 rounded-lg p-4">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="text-green-700 font-medium">Заказ успешно отправлен!</span>
+                    </div>
+                    <p className="text-sm text-gray-600 text-center">
+                      Мы свяжемся с вами в ближайшее время для подтверждения заказа.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {showContactForm ? (
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-gray-900">Контактная информация</h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Имя
+                            </label>
+                            <input
+                              type="text"
+                              value={customerInfo.name}
+                              onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="Ваше имя"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Телефон *
+                            </label>
+                            <input
+                              type="tel"
+                              value={customerInfo.phone}
+                              onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="+7 (___) ___-__-__"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              value={customerInfo.email}
+                              onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                              placeholder="your@email.com"
+                            />
+                          </div>
+                        </div>
 
-                <Link href="/catalog">
-                  <Button variant="outline" size="lg" className="w-full">
-                    Продолжить покупки
-                  </Button>
-                </Link>
+                        {error && (
+                          <div className="flex items-center space-x-2 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                            <span className="text-red-700 text-sm">{error}</span>
+                          </div>
+                        )}
+
+                        <div className="flex space-x-3">
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="flex-1"
+                            onClick={() => {
+                              setShowContactForm(false);
+                              resetState();
+                            }}
+                          >
+                            Назад
+                          </Button>
+                          <Button
+                            size="lg"
+                            className="flex-1 bg-black hover:bg-gray-800 text-white"
+                            onClick={handleOrderSubmit}
+                            disabled={isLoading || !customerInfo.phone.trim()}
+                          >
+                            {isLoading ? 'Отправляем...' : 'Отправить заказ'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        size="lg"
+                        className="w-full bg-black hover:bg-gray-800 mb-4 text-white"
+                        onClick={() => setShowContactForm(true)}
+                      >
+                        Оформить заказ
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {!isSuccess && (
+                  <Link href="/catalog">
+                    <Button variant="outline" size="lg" className="w-full mt-4">
+                      Продолжить покупки
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
