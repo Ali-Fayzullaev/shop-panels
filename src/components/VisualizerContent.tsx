@@ -58,7 +58,7 @@ export function VisualizerContent() {
 
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div className="bg-white shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-[#333333]">{zoneNames[zone]}</h3>
             <button
@@ -77,13 +77,13 @@ export function VisualizerContent() {
                   handleSelectPicture(zone, pic.src);
                   onClose();
                 }}
-                className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                className={`p-2 border-2 cursor-pointer transition-all ${
                   currentSrc === pic.src
                     ? 'border-[#333333] bg-gray-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="w-full h-12 rounded-md overflow-hidden border">
+                <div className="w-full h-12 overflow-hidden border">
                   <img
                     src={pic.src}
                     alt={pic.name}

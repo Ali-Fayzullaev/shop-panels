@@ -10,7 +10,7 @@ import { ContactSection } from "@/components/ContactSection";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Hero />
       <main>
         <div className="py-12">
