@@ -18,16 +18,32 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
   const [activeTab, setActiveTab] = useState("about");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedThickness, setSelectedThickness] = useState(0);
-  const { addToCart } = useCart();
+  const { addToCart, updateQuantity, getItemQuantity, isInCart } = useCart();
 
   // Получаем все изображения товара
   const allImages = product.images || [product.image];
   
   // Получаем выбранную толщину
   const selectedThicknessValue = product.specifications?.thickness?.[selectedThickness];
+  
+  // Проверяем, есть ли товар в корзине и его количество
+  const currentQuantity = getItemQuantity(product.id, selectedThicknessValue);
+  const inCart = isInCart(product.id, selectedThicknessValue);
 
   const handleAddToCart = () => {
     addToCart(product, selectedThicknessValue);
+  };
+
+  const handleIncreaseQuantity = () => {
+    updateQuantity(product.id, currentQuantity + 1, selectedThicknessValue);
+  };
+
+  const handleDecreaseQuantity = () => {
+    if (currentQuantity > 1) {
+      updateQuantity(product.id, currentQuantity - 1, selectedThicknessValue);
+    } else {
+      updateQuantity(product.id, 0, selectedThicknessValue); // Удаление из корзины
+    }
   };
 
   const breadcrumbs = [
@@ -210,15 +226,57 @@ export function ProductPageContent({ product, category }: ProductPageProps) {
               </div>
             )}
 
-            {/* Кнопка добавить в корзину */}
+            {/* Кнопки корзины */}
             <div className="pt-6">
-              <Button 
-                size="lg" 
-                className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 text-lg"
-                onClick={handleAddToCart}
-              >
-                Добавить в корзину
-              </Button>
+              {!inCart ? (
+                <Button 
+                  size="lg" 
+                  className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-4 text-lg transition-all duration-200"
+                  onClick={handleAddToCart}
+                >
+                  Добавить в корзину
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center space-x-4 bg-green-50 border border-green-200 rounded-lg py-3">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-green-700 font-medium">Товар в корзине</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between bg-gray-50 border rounded-lg p-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDecreaseQuantity}
+                      className="w-10 h-10 p-0 border-gray-300 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                    >
+                      <span className="text-lg font-bold">−</span>
+                    </Button>
+                    
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-gray-900">{currentQuantity}</div>
+                      <div className="text-xs text-gray-500">шт.</div>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleIncreaseQuantity}
+                      className="w-10 h-10 p-0 border-gray-300 hover:bg-green-50 hover:border-green-300 hover:text-green-600"
+                    >
+                      <span className="text-lg font-bold">+</span>
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center text-sm text-gray-600">
+                    Общая стоимость: <span className="font-semibold text-gray-900">
+                      {formatPrice(product.price * currentQuantity)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

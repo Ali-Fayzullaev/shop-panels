@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, useContext, useReducer, ReactNode, useEffect } from "react";
 import { Product } from "@/data/types";
 
 // Типы для корзины
@@ -17,9 +17,10 @@ interface CartState {
 
 type CartAction =
   | { type: "ADD_ITEM"; payload: { product: Product; thickness?: string } }
-  | { type: "REMOVE_ITEM"; payload: { productId: string } }
-  | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number } }
-  | { type: "CLEAR_CART" };
+  | { type: "REMOVE_ITEM"; payload: { productId: string; thickness?: string } }
+  | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number; thickness?: string } }
+  | { type: "CLEAR_CART" }
+  | { type: "LOAD_CART"; payload: CartState };
 
 // Редьюсер для корзины
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -56,8 +57,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "REMOVE_ITEM": {
+      const { productId, thickness } = action.payload;
       const updatedItems = state.items.filter(
-        (item) => item.product.id !== action.payload.productId
+        (item) => !(item.product.id === productId && item.selectedThickness === thickness)
       );
       return {
         ...state,
@@ -67,10 +69,12 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "UPDATE_QUANTITY": {
-      const { productId, quantity } = action.payload;
+      const { productId, quantity, thickness } = action.payload;
       if (quantity <= 0) {
         // Удаляем товар если количество 0 или меньше
-        const updatedItems = state.items.filter((item) => item.product.id !== productId);
+        const updatedItems = state.items.filter(
+          (item) => !(item.product.id === productId && item.selectedThickness === thickness)
+        );
         return {
           ...state,
           items: updatedItems,
@@ -79,7 +83,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
 
       const updatedItems = state.items.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product.id === productId && item.selectedThickness === thickness 
+          ? { ...item, quantity } 
+          : item
       );
       return {
         ...state,
@@ -94,6 +100,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         total: 0,
       };
 
+    case "LOAD_CART":
+      return action.payload;
+
     default:
       return state;
   }
@@ -104,14 +113,43 @@ function calculateTotal(items: CartItem[]): number {
   return items.reduce((total, item) => total + item.product.price * item.quantity, 0);
 }
 
+// Функции для работы с localStorage
+const CART_STORAGE_KEY = 'shop-panels-cart';
+
+function saveCartToStorage(cartState: CartState) {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartState));
+    } catch (error) {
+      console.error('Ошибка сохранения корзины в localStorage:', error);
+    }
+  }
+}
+
+function loadCartFromStorage(): CartState | null {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (savedCart) {
+        return JSON.parse(savedCart);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки корзины из localStorage:', error);
+    }
+  }
+  return null;
+}
+
 // Контекст
 interface CartContextType {
   state: CartState;
   addToCart: (product: Product, thickness?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, thickness?: string) => void;
+  updateQuantity: (productId: string, quantity: number, thickness?: string) => void;
   clearCart: () => void;
   getTotalItems: () => number;
+  getItemQuantity: (productId: string, thickness?: string) => number;
+  isInCart: (productId: string, thickness?: string) => boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -124,16 +162,31 @@ interface CartProviderProps {
 export function CartProvider({ children }: CartProviderProps) {
   const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 });
 
+  // Загрузка корзины из localStorage при первом рендере
+  useEffect(() => {
+    const savedCart = loadCartFromStorage();
+    if (savedCart) {
+      dispatch({ type: "LOAD_CART", payload: savedCart });
+    }
+  }, []);
+
+  // Сохранение корзины в localStorage при изменении состояния
+  useEffect(() => {
+    if (state.items.length > 0 || state.total > 0) {
+      saveCartToStorage(state);
+    }
+  }, [state]);
+
   const addToCart = (product: Product, thickness?: string) => {
     dispatch({ type: "ADD_ITEM", payload: { product, thickness } });
   };
 
-  const removeFromCart = (productId: string) => {
-    dispatch({ type: "REMOVE_ITEM", payload: { productId } });
+  const removeFromCart = (productId: string, thickness?: string) => {
+    dispatch({ type: "REMOVE_ITEM", payload: { productId, thickness } });
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QUANTITY", payload: { productId, quantity } });
+  const updateQuantity = (productId: string, quantity: number, thickness?: string) => {
+    dispatch({ type: "UPDATE_QUANTITY", payload: { productId, quantity, thickness } });
   };
 
   const clearCart = () => {
@@ -144,6 +197,19 @@ export function CartProvider({ children }: CartProviderProps) {
     return state.items.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const getItemQuantity = (productId: string, thickness?: string) => {
+    const item = state.items.find(
+      (item) => item.product.id === productId && item.selectedThickness === thickness
+    );
+    return item ? item.quantity : 0;
+  };
+
+  const isInCart = (productId: string, thickness?: string) => {
+    return state.items.some(
+      (item) => item.product.id === productId && item.selectedThickness === thickness
+    );
+  };
+
   const value: CartContextType = {
     state,
     addToCart,
@@ -151,6 +217,8 @@ export function CartProvider({ children }: CartProviderProps) {
     updateQuantity,
     clearCart,
     getTotalItems,
+    getItemQuantity,
+    isInCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
