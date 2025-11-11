@@ -7,19 +7,45 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 const certificates = [
-  { id: 1, src: '/ser/ser01.jpg', alt: 'Сертификат' },
-  { id: 2, src: '/ser/ser02.jpg', alt: 'Сертификат' },
-  { id: 3, src: '/ser/ser03.jpg', alt: 'Сертификат' },
-  { id: 4, src: '/ser/ser04.jpg', alt: 'Сертификат' },
+  { id: 1, src: '/ser/ser01.jpg', alt: 'Сертификат качества ISO 9001' },
+  { id: 2, src: '/ser/ser02.jpg', alt: 'Сертификат соответствия ГОСТ' },
+  { id: 3, src: '/ser/ser03.jpg', alt: 'Сертификат пожарной безопасности' },
+  { id: 4, src: '/ser/ser04.jpg', alt: 'Экологический сертификат' },
+  { id: 5, src: '/ser/ser01.jpg', alt: 'Сертификат CE' },
+  { id: 6, src: '/ser/ser02.jpg', alt: 'Сертификат RoHS' },
+  { id: 7, src: '/ser/ser03.jpg', alt: 'Гигиенический сертификат' },
+  { id: 8, src: '/ser/ser04.jpg', alt: 'Сертификат прочности материалов' },
 ];
 
 export function CertificatesSection() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Настройки карусели для разных экранов
+  const itemsPerSlide = {
+    mobile: 1,
+    tablet: 2, 
+    desktop: 4
+  };
+
+  const totalSlides = {
+    mobile: certificates.length,
+    tablet: Math.ceil(certificates.length / itemsPerSlide.tablet),
+    desktop: Math.ceil(certificates.length / itemsPerSlide.desktop)
+  };
 
   const nextCertificate = () => {
     if (selectedIndex !== null) {
       setSelectedIndex((selectedIndex + 1) % certificates.length);
     }
+  };
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % totalSlides.desktop);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + totalSlides.desktop) % totalSlides.desktop);
   };
 
   const prevCertificate = () => {
@@ -42,22 +68,115 @@ export function CertificatesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {certificates.map((certificate, index) => (
-            <div key={certificate.id} 
-                 className="group cursor-pointer bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
-                 onClick={() => setSelectedIndex(index)}>
-              <div className="aspect-3/4 relative overflow-hidden">
-                <Image
-                  src={certificate.src}
-                  alt={certificate.alt}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+        {/* Универсальная карусель */}
+        <div className="relative">
+          {/* Мобильная версия - горизонтальный скролл */}
+          <div className="md:hidden">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-4 pb-4" style={{ width: `${certificates.length * 280}px` }}>
+                {certificates.map((certificate, index) => (
+                  <div key={certificate.id} 
+                       className="group cursor-pointer bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 shrink-0"
+                       style={{ width: '260px' }}
+                       onClick={() => setSelectedIndex(index)}>
+                    <div className="aspect-3/4 relative overflow-hidden">
+                      <Image
+                        src={certificate.src}
+                        alt={certificate.alt}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Десктопная версия - карусель с кнопками */}
+          <div className="hidden md:block">
+            <div className="overflow-hidden">
+              <div 
+                className="flex transition-transform duration-300 ease-in-out gap-6"
+                style={{ 
+                  transform: `translateX(-${currentSlide * 100}%)`,
+                  width: `${totalSlides.desktop * 100}%`
+                }}
+              >
+                {Array.from({ length: totalSlides.desktop }).map((_, slideIndex) => (
+                  <div key={slideIndex} className="grid md:grid-cols-4 gap-6 w-[80vw] shrink-0">
+                    {certificates
+                      .slice(
+                        slideIndex * itemsPerSlide.desktop, 
+                        (slideIndex + 1) * itemsPerSlide.desktop
+                      )
+                      .map((certificate, index) => (
+                        <div key={certificate.id} 
+                             className="group cursor-pointer bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+                             onClick={() => setSelectedIndex(slideIndex * itemsPerSlide.desktop + index)}>
+                          <div className="aspect-3/4 relative overflow-hidden">
+                            <Image
+                              src={certificate.src}
+                              alt={certificate.alt}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Навигационные кнопки для десктопа */}
+            {totalSlides.desktop > 1 && (
+              <>
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg text-gray-600 hover:text-gray-900 transition-all duration-200"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg text-gray-600 hover:text-gray-900 transition-all duration-200"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Индикаторы слайдов */}
+          <div className="flex justify-center mt-6">
+            <div className="flex gap-2">
+              {/* Мобильные индикаторы */}
+              <div className="md:hidden flex gap-2">
+                {certificates.map((_, index) => (
+                  <div key={index} className="w-2 h-2 rounded-full bg-gray-300"></div>
+                ))}
+              </div>
+              
+              {/* Десктопные индикаторы */}
+              {totalSlides.desktop > 1 && (
+                <div className="hidden md:flex gap-2">
+                  {Array.from({ length: totalSlides.desktop }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentSlide(index)}
+                      className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+                        currentSlide === index ? 'bg-blue-500' : 'bg-gray-300 hover:bg-gray-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Модальное окно */}
