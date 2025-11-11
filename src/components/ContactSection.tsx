@@ -104,7 +104,7 @@ export function ContactSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-              className="inline-flex items-center justify-center px-6 py-3 bg-[#333333] hover:bg-[#333333]/80 text-white font-semibold rounded-lg transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-[#333333] hover:bg-[#333333]/80 text-white font-semibold  transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />
               Позвонить
@@ -113,7 +113,7 @@ export function ContactSection() {
               href="https://yandex.ru/maps/213/moscow/?text=Рязанский%20проспект%202%20корп%203"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-[#333333] font-semibold rounded-lg border-2 border-[#333333] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-[#333333] font-semibold  border-2 border-[#333333] transition-colors"
             >
               <MapPin className="h-5 w-5 mr-2" />
               Открыть в картах

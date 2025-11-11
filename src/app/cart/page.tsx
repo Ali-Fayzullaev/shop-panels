@@ -21,7 +21,7 @@ export default function CartPage() {
               Добавьте товары в корзину, чтобы оформить заказ
             </p>
             <Link href="/catalog">
-              <Button size="lg" className="bg-black hover:bg-gray-800">
+              <Button size="lg" className="bg-black hover:bg-gray-800 text-white">
                 Перейти к каталогу
               </Button>
             </Link>
@@ -54,11 +54,11 @@ export default function CartPage() {
               {state.items.map((item) => (
                 <div
                   key={`${item.product.id}-${item.selectedThickness}`}
-                  className="bg-white rounded-lg shadow-sm border p-6"
+                  className="bg-white shadow-sm border p-6"
                 >
                   <div className="flex items-start space-x-4">
                     {/* Изображение товара */}
-                    <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                    <div className="relative w-24 h-24 bg-gray-100 overflow-hidden shrink-0">
                       <Image
                         src={item.product.image}
                         alt={item.product.name}
@@ -140,7 +140,7 @@ export default function CartPage() {
 
             {/* Итого и оформление */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-4">
+              <div className="bg-white shadow-sm border p-6 sticky top-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Итого</h2>
                 
                 <div className="space-y-3 mb-6">
@@ -162,7 +162,7 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <Button size="lg" className="w-full bg-black hover:bg-gray-800 mb-4">
+                <Button size="lg" className="w-full bg-black hover:bg-gray-800 mb-4 text-white">
                   Оформить заказ
                 </Button>
 

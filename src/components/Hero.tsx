@@ -30,10 +30,10 @@ const Hero = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative min-h-screen">
+    <section className="relative h-[80vh] min-h-[600px]">
       {/* Hero Background with Slideshow */}
       <div className="absolute inset-0 z-0">
-        <div className="relative h-full w-full overflow-hidden">
+        <div className="relative h-full w-full overflow-hidden bg-gray-900">
           {heroImages.map((image, index) => (
             <div
               key={image}
@@ -56,10 +56,7 @@ const Hero = () => {
       </div>
 
       {/* Hero Content */}
-      <div
-        className="relative z-10 flex items-center justify-start px-6 lg:px-8"
-        style={{ height: "100vh" }}
-      >
+      <div className="relative z-10 flex items-center justify-start px-6 lg:px-8 h-full">
         {/* Left side dark overlay for text readability */}
         <div className="absolute left-0 top-0 w-1/2 h-full bg-black/40"></div>
 

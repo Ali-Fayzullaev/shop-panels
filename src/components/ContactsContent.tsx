@@ -57,20 +57,20 @@ export function ContactsContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a 
               href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-              className="group bg-[#333333] rounded-lg p-6 hover:bg-[#333333]/80 transition-all duration-300 text-white text-center"
+              className="group bg-[#333333]  p-6 hover:bg-[#333333]/80 transition-all duration-300 text-white text-center"
             >
               <Phone className="h-8 w-8 mx-auto mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold mb-2">Позвоните нам</h3>
               <p className="text-gray-300">{COMPANY_INFO.phone}</p>
             </a>
             
-            <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <div className="bg-gray-50 p-6 text-center">
               <Clock className="h-8 w-8 mx-auto mb-3 text-[#333333]" />
               <h3 className="font-semibold mb-2 text-[#333333]">Режим работы</h3>
               <p className="text-[#989898]">{COMPANY_INFO.workingHours}</p>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <div className="bg-gray-50 p-6 text-center">
               <MapPin className="h-8 w-8 mx-auto mb-3 text-[#333333]" />
               <h3 className="font-semibold mb-2 text-[#333333]">Офис в Астане</h3>
               <p className="text-[#989898]">1 локация</p>
