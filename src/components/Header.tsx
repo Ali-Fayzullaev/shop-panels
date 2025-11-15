@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart, Menu, ChevronDown, X } from "lucide-react";
+import { ShoppingCart, Menu, ChevronDown, X, Building, Grid3X3, Users, Eye, Handshake, MapPin, MessageCircle, Phone, Clock } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 const Header = () => {
@@ -249,165 +249,224 @@ const Header = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:bg-white/10"
+                  className="text-white hover:bg-white/10 transition-all duration-200"
                 >
                   <Menu className="w-6 h-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent 
-                side="left" 
-                className="w-[300px] sm:w-[400px] bg-[#333333] border-l border-white/10"
+                side="right" 
+                className="w-[320px] sm:w-[400px] bg-gradient-to-b from-[#333333] to-[#2a2a2a] border-l border-white/10"
               >
-                <SheetHeader className="relative">
+                <SheetHeader className="relative pb-6">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 text-white hover:bg-white/10"
+                    className="absolute right-0 top-0 text-white hover:bg-white/10 transition-all duration-200"
                     onClick={closeMobileMenu}
                   >
                     <X className="w-5 h-5" />
                   </Button>
-                  <SheetTitle className="text-white pr-10">{COMPANY_INFO.name}</SheetTitle>
-                  <SheetDescription className="text-white/80">
-                    Навигация по сайту
-                  </SheetDescription>
+                  <div className="flex items-center space-x-3 pr-10">
+                    <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                      <Building className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <SheetTitle className="text-white text-left">{COMPANY_INFO.name}</SheetTitle>
+                      <SheetDescription className="text-white/70 text-left text-sm">
+                        Стеновые панели премиум класса
+                      </SheetDescription>
+                    </div>
+                  </div>
                 </SheetHeader>
-                <div className="mt-6 space-y-4">
+                
+                <div className="space-y-3">
                   {/* Каталог с выпадающим меню */}
                   <Collapsible open={isCatalogOpen} onOpenChange={setIsCatalogOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left hover:bg-white/10 rounded-md text-white">
-                      <span className="font-medium">Каталог</span>
-                      <ChevronDown className={cn("w-4 h-4 transition-transform", isCatalogOpen && "rotate-180")} />
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left hover:bg-white/10 transition-all duration-200 text-white group">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                          <Grid3X3 className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Каталог</span>
+                      </div>
+                      <ChevronDown className={cn("w-4 h-4 transition-all duration-300", isCatalogOpen && "rotate-180")} />
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="ml-4 mt-2 space-y-2">
-                      <Link 
-                        href="/bambukovye-paneli"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Бамбуковые панели
-                      </Link>
-                      <Link 
-                        href="/riflenye-paneli"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Рифленые панели
-                      </Link>
-                      <Link 
-                        href="/paneli-s-3d-pechatyu"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Панели с 3D печатью
-                      </Link>
-                      <Link 
-                        href="/alum"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Вспененный алюминий
-                      </Link>
-                      <Link 
-                        href="/flexible"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Гибкая керамика
-                      </Link>
-                      <Link 
-                        href="/montazhnye-profili"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Монтажные профили
-                      </Link>
-                      <Link 
-                        href="/sale"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Акции
-                      </Link>
+                    <CollapsibleContent className="ml-11 space-y-1 overflow-hidden">
+                      <div className="border-l border-white/20 pl-4 space-y-1">
+                        <Link 
+                          href="/bambukovye-paneli"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🎋 Бамбуковые панели
+                        </Link>
+                        <Link 
+                          href="/riflenye-paneli"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          📐 Рифленые панели
+                        </Link>
+                        <Link 
+                          href="/paneli-s-3d-pechatyu"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🎨 Панели с 3D печатью
+                        </Link>
+                        <Link 
+                          href="/alum"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          ⚡ Вспененный алюминий
+                        </Link>
+                        <Link 
+                          href="/flexible"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🔄 Гибкая керамика
+                        </Link>
+                        <Link 
+                          href="/montazhnye-profili"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🔧 Монтажные профили
+                        </Link>
+                        <Link 
+                          href="/sale"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🏷️ Акции
+                        </Link>
+                      </div>
                     </CollapsibleContent>
                   </Collapsible>
 
                   {/* Покупателям с выпадающим меню */}
                   <Collapsible open={isBuyersOpen} onOpenChange={setIsBuyersOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left hover:bg-white/10 rounded-md text-white">
-                      <span className="font-medium">Покупателям</span>
-                      <ChevronDown className={cn("w-4 h-4 transition-transform", isBuyersOpen && "rotate-180")} />
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left hover:bg-white/10 transition-all duration-200 text-white group">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                          <Users className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Покупателям</span>
+                      </div>
+                      <ChevronDown className={cn("w-4 h-4 transition-all duration-300", isBuyersOpen && "rotate-180")} />
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="ml-4 mt-2 space-y-2">
-                      <Link 
-                        href="/sale"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Акции
-                      </Link>
-                      <Link 
-                        href="/catalog"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Каталог
-                      </Link>
-                      <Link 
-                        href="/visualizer"
-                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
-                        onClick={closeMobileMenu}
-                      >
-                        Визуализатор
-                      </Link>
+                    <CollapsibleContent className="ml-11 space-y-1 overflow-hidden">
+                      <div className="border-l border-white/20 pl-4 space-y-1">
+                        <Link 
+                          href="/sale"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          🔥 Акции
+                        </Link>
+                        <Link 
+                          href="/catalog"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          📋 Каталог
+                        </Link>
+                        <Link 
+                          href="/visualizer"
+                          className="block p-2 text-sm hover:bg-white/10 transition-all duration-200 text-white/90 hover:text-white"
+                          onClick={closeMobileMenu}
+                        >
+                          👁️ Визуализатор
+                        </Link>
+                      </div>
                     </CollapsibleContent>
                   </Collapsible>
 
                   {/* Простые ссылки */}
                   <Link
                     href="/visualizer"
-                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    className="flex items-center space-x-3 p-3 font-medium hover:bg-white/10 transition-all duration-200 text-white group"
                     onClick={closeMobileMenu}
                   >
-                    Визуализатор
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <Eye className="w-4 h-4" />
+                    </div>
+                    <span>Визуализатор</span>
                   </Link>
+                  
                   <Link
                     href="/cooperation"
-                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    className="flex items-center space-x-3 p-3 font-medium hover:bg-white/10 transition-all duration-200 text-white group"
                     onClick={closeMobileMenu}
                   >
-                    Сотрудничество
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <Handshake className="w-4 h-4" />
+                    </div>
+                    <span>Сотрудничество</span>
                   </Link>
+                  
                   <Link
                     href="/dealers"
-                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    className="flex items-center space-x-3 p-3 font-medium hover:bg-white/10 transition-all duration-200 text-white group"
                     onClick={closeMobileMenu}
                   >
-                    Дилеры
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <span>Дилеры</span>
                   </Link>
+                  
                   <Link
                     href="/contacts"
-                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    className="flex items-center space-x-3 p-3 font-medium hover:bg-white/10 transition-all duration-200 text-white group"
                     onClick={closeMobileMenu}
                   >
-                    Контакты
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <MessageCircle className="w-4 h-4" />
+                    </div>
+                    <span>Контакты</span>
                   </Link>
 
-                  {/* Телефон */}
-                  <div className="border-t border-white/20 pt-4 mt-6">
+                  {/* Разделитель */}
+                  <div className="border-t border-white/20 my-6"></div>
+
+                  {/* Контактная информация */}
+                  <div className="space-y-3">
                     <a
                       href={`tel:${COMPANY_INFO.phoneClean}`}
-                      className="flex items-center p-2 text-blue-400 hover:bg-white/10 rounded-md"
+                      className="flex items-center space-x-3 p-3 text-blue-300 hover:bg-white/10 transition-all duration-200 group"
                     >
-                      <svg
-                        className="w-4 h-4 mr-2"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                      </svg>
-                      {COMPANY_INFO.phone}
+                      <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-all duration-200">
+                        <Phone className="w-4 h-4 text-blue-300" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{COMPANY_INFO.phone}</div>
+                        <div className="text-xs text-white/50">Позвонить сейчас</div>
+                      </div>
                     </a>
+
+                    <div className="flex items-center space-x-3 p-3 text-white/70">
+                      <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-white">{COMPANY_INFO.workingHours}</div>
+                        <div className="text-xs text-white/50">Режим работы</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Кнопка "Заказать звонок" */}
+                  <div className="pt-4">
+                    <Button 
+                      className="w-full bg-white text-[#333333] hover:bg-white/90 transition-all duration-200 font-medium"
+                      onClick={closeMobileMenu}
+                    >
+                      📞 Заказать звонок
+                    </Button>
                   </div>
                 </div>
               </SheetContent>
