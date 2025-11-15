@@ -1,55 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 const Hero = () => {
-  // Массив изображений для слайдшоу
-  const heroImages = [
-    "/images/wall.png",
-    "/images/wall1.jpg",
-    // '/images/wall2.png',
-    // '/images/wall3.png',
-    // '/images/wall4.png',
-    // '/images/wall5.jpg',
-    // '/images/wall6.png'
-  ];
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Автоматическое переключение изображений каждые 5 секунд
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 5000); // 5 секунд
-
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
-
   return (
     <section className="relative h-[80vh] min-h-[600px]">
-      {/* Hero Background with Slideshow */}
+      {/* Hero Background with Single Image */}
       <div className="absolute inset-0 z-0">
         <div className="relative h-full w-full overflow-hidden bg-gray-900">
-          {heroImages.map((image, index) => (
-            <div
-              key={image}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentImageIndex ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <Image
-                src={image}
-                alt={`Декоративные стеновые панели ${index + 1}`}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-            </div>
-          ))}
+          <Image
+            src="/images/wall1.jpg"
+            alt="Декоративные стеновые панели"
+            fill
+            className="object-cover"
+            priority
+          />
           {/* Overlay for better text readability */}
           <div className="absolute inset-0 bg-black/30" />
         </div>
