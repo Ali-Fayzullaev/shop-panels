@@ -193,6 +193,14 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const clearCart = () => {
     dispatch({ type: "CLEAR_CART" });
+    // Принудительно очищаем localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(CART_STORAGE_KEY);
+      } catch (error) {
+        console.error('Ошибка очистки корзины из localStorage:', error);
+      }
+    }
   };
 
   const getTotalItems = () => {

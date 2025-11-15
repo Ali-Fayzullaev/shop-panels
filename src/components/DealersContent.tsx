@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { MapPin, Phone, Building, User } from 'lucide-react';
 
@@ -70,24 +70,24 @@ const dealers: Dealer[] = [
     company: "DALI",
     contact: "+7 (7262) 71-48-61",
     entity: "ИП Абдуллаев Я. Г.",
-    address: "г. Тараз, ул. Жамбыла 1а",
-    coordinates: { lat: 42.8941, lng: 71.3784 }
+    address: "г. Тараз, ул. Тауке хана 52",
+    coordinates: { lat: 42.8998, lng: 71.3667 }
   },
   {
     id: 7,
     city: "Павлодар",
-    company: "Villa Design",
-    contact: "+7 (7182) 99-11-15",
-    entity: "ИП Кузнецова Ю. Е.",
-    address: "г. Павлодар, ул. Сатпаева 40",
-    coordinates: { lat: 52.2869, lng: 76.9833 }
+    company: "North Decor",
+    contact: "+7 (7182) 22-18-84",
+    entity: "ТОО «СЕВЕРНЫЙ ДЕКОР»",
+    address: "г. Павлодар, ул. Ленина 125",
+    coordinates: { lat: 52.2856, lng: 76.9574 }
   },
   {
     id: 8,
     city: "Усть-Каменогорск",
-    company: "Декор стен",
-    contact: "+7 (7232) 26-15-59",
-    entity: "ИП Ворожцова Н. Н.",
+    company: "East Wall Design",
+    contact: "+7 (7232) 94-72-18",
+    entity: "ИП Сидоров А. В.",
     address: "г. Усть-Каменогорск, ул. Ленина 8В",
     coordinates: { lat: 50.0043, lng: 82.6003 }
   },
@@ -163,12 +163,17 @@ const containerStyle = {
 
 const defaultCenter = { lat: 51.1282, lng: 71.4308 }; // Нур-Султан
 
+// Мемоизируем Google Maps API библиотеки
+const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = [];
+
 export default function DealersContent() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>(defaultCenter);
   const [mapZoom, setMapZoom] = useState<number>(5);
   const [mapHeight, setMapHeight] = useState<number>(500);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     const updateMapHeight = () => {
@@ -187,17 +192,52 @@ export default function DealersContent() {
     return () => window.removeEventListener('resize', updateMapHeight);
   }, []);
 
-  const handleCityClick = (dealer: Dealer) => {
+  // Мемоизируем обработчики
+  const handleCityClick = useCallback((dealer: Dealer) => {
     setSelectedCity(dealer.city);
     setMapCenter(dealer.coordinates);
     setMapZoom(12);
     setSelectedMarker(dealer.id);
-  };
+  }, []);
 
-  const uniqueCities = [...new Set(dealers.map(dealer => dealer.city))];
+  const handleMapLoad = useCallback(() => {
+    setMapLoaded(true);
+    setMapError(false);
+  }, []);
 
-  // Замените на ваш Google Maps API ключ
+  const handleMapError = useCallback(() => {
+    setMapError(true);
+    console.warn('Google Maps failed to load in dealers page, using fallback');
+  }, []);
+
+  const handleMarkerClick = useCallback((dealer: Dealer) => {
+    setSelectedMarker(dealer.id);
+    handleCityClick(dealer);
+  }, [handleCityClick]);
+
+  const handleInfoWindowClose = useCallback(() => {
+    setSelectedMarker(null);
+  }, []);
+
+  const uniqueCities = useMemo(() => [...new Set(dealers.map(dealer => dealer.city))], []);
+
+  // Получаем Google Maps API ключ
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+  // Мемоизируем опции карты
+  const mapOptions = useMemo(() => ({
+    styles: [
+      {
+        featureType: "poi.business",
+        stylers: [{ visibility: "off" }]
+      }
+    ],
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: true,
+    streetViewControl: true,
+    fullscreenControl: true
+  }), []);
   
   // Если нет API ключа, показываем заглушку вместо карты
   if (!GOOGLE_MAPS_API_KEY) {
@@ -207,17 +247,17 @@ export default function DealersContent() {
           {/* Статистика */}
           <div className="mb-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="text-center bg-[#333333]  p-6 text-white">
+              <div className="text-center bg-[#333333] p-6 text-white">
                 <div className="text-3xl font-bold mb-2">15+</div>
                 <p className="text-gray-300">Городов</p>
               </div>
               
-              <div className="text-center bg-gray-50  p-6">
+              <div className="text-center bg-gray-50 p-6">
                 <div className="text-3xl font-bold mb-2 text-[#333333]">20+</div>
                 <p className="text-[#989898]">Партнеров</p>
               </div>
               
-              <div className="text-center bg-gray-50  p-6">
+              <div className="text-center bg-gray-50 p-6">
                 <div className="text-3xl font-bold mb-2 text-[#333333]">100%</div>
                 <p className="text-[#989898]">Гарантия качества</p>
               </div>
@@ -226,7 +266,7 @@ export default function DealersContent() {
           
           {/* Карта-заглушка */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-            <div className="bg-gray-50  overflow-hidden shadow-lg">
+            <div className="bg-gray-50 overflow-hidden shadow-lg">
               <div 
                 className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative"
                 style={{ height: `${mapHeight}px` }}
@@ -262,35 +302,24 @@ export default function DealersContent() {
             {/* Информация о дилерской программе */}
             <div className="flex flex-col justify-center">
               <h2 className="text-3xl font-bold text-[#333333] mb-6">
-                Партнерская сеть по всему Казахстану
+                Официальные дилеры по Казахстану
               </h2>
-              <p className="text-[#989898] mb-6 leading-relaxed">
-                Наши официальные дилеры предоставляют полный спектр услуг: от консультации до установки. 
-                Все партнеры прошли обучение и имеют сертификаты качества.
+              <p className="text-lg text-[#989898] mb-8 leading-relaxed">
+                Наша дилерская сеть охватывает все крупные города Казахстана. Каждый партнер прошел 
+                сертификацию и гарантирует высокое качество продукции и сервиса.
               </p>
-              
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
                     <Building className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-[#333333]">Официальные партнеры</h4>
-                    <p className="text-[#989898] text-sm">Сертифицированные дилеры с гарантией</p>
+                    <h4 className="font-semibold text-[#333333]">Профессиональный подход</h4>
+                    <p className="text-[#989898] text-sm">Квалифицированные консультанты в каждом салоне</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
-                    <Phone className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-[#333333]">Прямая связь</h4>
-                    <p className="text-[#989898] text-sm">Контакты для быстрой консультации</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
                     <MapPin className="h-6 w-6 text-white" />
                   </div>
@@ -338,7 +367,7 @@ export default function DealersContent() {
               })}
             </div>
           </div>
-          
+
           {/* Список дилеров */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-[#333333] mb-8 text-center">
@@ -349,7 +378,7 @@ export default function DealersContent() {
               {dealers.map((dealer) => (
                 <div 
                   key={dealer.id} 
-                  className={`bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${
+                  className={`bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${
                     selectedCity === dealer.city ? 'ring-2 ring-blue-500' : ''
                   }`}
                   onClick={() => handleCityClick(dealer)}
@@ -421,23 +450,14 @@ export default function DealersContent() {
             </h3>
             <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
               Присоединяйтесь к нашей партнерской программе и получите возможность продавать 
-              качественные стеновые панели с высокой маржинальностью
+              высококачественные стеновые панели в вашем регионе
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="tel:+77713453684"
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold hover:bg-gray-100 transition-colors"
-              >
-                <Phone className="h-5 w-5 mr-2" />
-                Связаться с нами
-              </a>
-              <a
-                href="/contacts"
-                className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold hover:bg-white hover:text-[#333333] transition-colors"
-              >
-                Подробнее
-              </a>
-            </div>
+            <a 
+              href="/cooperation" 
+              className="inline-flex items-center px-6 py-3 bg-white text-[#333333] font-semibold hover:bg-gray-100 transition-colors"
+            >
+              Узнать подробности
+            </a>
           </div>
         </div>
       </section>
@@ -450,7 +470,7 @@ export default function DealersContent() {
         {/* Статистика */}
         <div className="mb-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center bg-[#333333]  p-6 text-white">
+            <div className="text-center bg-[#333333] p-6 text-white">
               <div className="text-3xl font-bold mb-2">15+</div>
               <p className="text-gray-300">Городов</p>
             </div>
@@ -473,58 +493,73 @@ export default function DealersContent() {
           {/* Карта с кнопками городов */}
           <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
             <div className="h-full min-h-[400px] lg:min-h-[500px] relative">
-              <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
-                <GoogleMap
-                  mapContainerStyle={{ ...containerStyle, height: mapHeight }}
-                  center={mapCenter}
-                  zoom={mapZoom}
-                  options={{
-                    styles: [
-                      {
-                        featureType: "poi.business",
-                        stylers: [{ visibility: "off" }]
-                      }
-                    ],
-                    disableDefaultUI: false,
-                    zoomControl: true,
-                    mapTypeControl: true,
-                    streetViewControl: true,
-                    fullscreenControl: true
-                  }}
+              {!mapError ? (
+                <LoadScript 
+                  googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                  libraries={libraries}
+                  onLoad={handleMapLoad}
+                  onError={handleMapError}
+                  preventGoogleFontsLoading={true}
+                  loadingElement={
+                    <div className="h-full flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333]"></div>
+                    </div>
+                  }
                 >
-                  {dealers.map((dealer) => (
-                    <Marker
-                      key={dealer.id}
-                      position={dealer.coordinates}
-                      icon={{
-                        url: selectedCity === dealer.city
-                          ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                          : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: selectedMarker !== null ? new window.google.maps.Size(32, 32) : undefined
-                      }}
-                      onClick={() => {
-                        setSelectedMarker(dealer.id);
-                        handleCityClick(dealer);
-                      }}
-                    />
-                  ))}
-                  
-                  {selectedMarker !== null && (
-                    <InfoWindow
-                      position={dealers.find(d => d.id === selectedMarker)?.coordinates}
-                      onCloseClick={() => setSelectedMarker(null)}
-                    >
-                      <div className="p-2 max-w-xs">
-                        <h3 className="font-bold text-gray-800 mb-1">{dealers.find(d => d.id === selectedMarker)?.city}</h3>
-                        <p className="font-medium text-gray-700 mb-1">{dealers.find(d => d.id === selectedMarker)?.company}</p>
-                        <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.address}</p>
-                        <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.contact}</p>
-                        <p className="text-gray-600 text-xs">{dealers.find(d => d.id === selectedMarker)?.entity}</p>
-                      </div>
-                    </InfoWindow>
-                  )}
-                </GoogleMap>
-              </LoadScript>
+                  <GoogleMap
+                    mapContainerStyle={{ ...containerStyle, height: mapHeight }}
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    options={mapOptions}
+                  >
+                    {dealers.map((dealer) => (
+                      <Marker
+                        key={dealer.id}
+                        position={dealer.coordinates}
+                        icon={{
+                          url: selectedCity === dealer.city
+                            ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                          scaledSize: mapLoaded && typeof window !== 'undefined' && window.google?.maps 
+                            ? new window.google.maps.Size(32, 32) 
+                            : undefined
+                        }}
+                        onClick={() => handleMarkerClick(dealer)}
+                      />
+                    ))}
+                    
+                    {selectedMarker !== null && (
+                      <InfoWindow
+                        position={dealers.find(d => d.id === selectedMarker)?.coordinates}
+                        onCloseClick={handleInfoWindowClose}
+                      >
+                        <div className="p-2 max-w-xs">
+                          <h3 className="font-bold text-gray-800 mb-1">{dealers.find(d => d.id === selectedMarker)?.city}</h3>
+                          <p className="font-medium text-gray-700 mb-1">{dealers.find(d => d.id === selectedMarker)?.company}</p>
+                          <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.address}</p>
+                          <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.contact}</p>
+                          <p className="text-gray-600 text-xs">{dealers.find(d => d.id === selectedMarker)?.entity}</p>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+              ) : (
+                // Fallback при ошибке загрузки карты
+                <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
+                  <div className="text-center p-8">
+                    <div className="w-24 h-24 bg-[#333333] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <MapPin className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#333333] mb-2">
+                      Наши дилеры по всему Казахстану
+                    </h3>
+                    <p className="text-[#989898] mb-4">
+                      Выберите город из списка ниже для просмотра контактов
+                    </p>
+                  </div>
+                </div>
+              )}
               
               {/* Легенда */}
               <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-gray-200 z-10">
@@ -540,39 +575,28 @@ export default function DealersContent() {
               </div>
             </div>
           </div>
-
+          
           {/* Информация о дилерской программе */}
           <div className="flex flex-col justify-center">
             <h2 className="text-3xl font-bold text-[#333333] mb-6">
-              Партнерская сеть по всему Казахстану
+              Официальные дилеры по Казахстану
             </h2>
-            <p className="text-[#989898] mb-6 leading-relaxed">
-              Наши официальные дилеры предоставляют полный спектр услуг: от консультации до установки. 
-              Все партнеры прошли обучение и имеют сертификаты качества.
+            <p className="text-lg text-[#989898] mb-8 leading-relaxed">
+              Наша дилерская сеть охватывает все крупные города Казахстана. Каждый партнер прошел 
+              сертификацию и гарантирует высокое качество продукции и сервиса.
             </p>
-            
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
                   <Building className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#333333]">Официальные партнеры</h4>
-                  <p className="text-[#989898] text-sm">Сертифицированные дилеры с гарантией</p>
+                  <h4 className="font-semibold text-[#333333]">Профессиональный подход</h4>
+                  <p className="text-[#989898] text-sm">Квалифицированные консультанты в каждом салоне</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
-                  <Phone className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-[#333333]">Прямая связь</h4>
-                  <p className="text-[#989898] text-sm">Контакты для быстрой консультации</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
                   <MapPin className="h-6 w-6 text-white" />
                 </div>
@@ -584,7 +608,7 @@ export default function DealersContent() {
             </div>
           </div>
         </div>
-
+        
         {/* Быстрый доступ к городам */}
         <div className="mb-16">
           <h3 className="text-2xl font-bold text-[#333333] mb-6 text-center">
@@ -644,29 +668,6 @@ export default function DealersContent() {
                         {dealer.city}
                       </h3>
                     </div>
-                    
-                    <h4 className="text-md font-semibold text-[#333333] mb-3">
-                      {dealer.company}
-                    </h4>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-start gap-2">
-                        <Phone className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
-                        <a 
-                          href={`tel:${dealer.contact.replace(/\s+/g, '')}`}
-                          className="text-[#989898] hover:text-[#333333] transition-colors text-sm"
-                        >
-                          {dealer.contact}
-                        </a>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <User className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
-                        <span className="text-[#989898] text-sm">
-                          {dealer.entity}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                   
                   <div className="mt-auto">
@@ -695,7 +696,7 @@ export default function DealersContent() {
             ))}
           </div>
         </div>
-
+        
         {/* Призыв к действию */}
         <div className="text-center bg-[#333333] p-8 text-white">
           <h3 className="text-2xl font-bold mb-4">
@@ -703,23 +704,14 @@ export default function DealersContent() {
           </h3>
           <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
             Присоединяйтесь к нашей партнерской программе и получите возможность продавать 
-            качественные стеновые панели с высокой маржинальностью
+            высококачественные стеновые панели в вашем регионе
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="tel:+77713453684"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold  hover:bg-gray-100 transition-colors"
-            >
-              <Phone className="h-5 w-5 mr-2" />
-              Связаться с нами
-            </a>
-            <a
-              href="/contacts"
-              className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold hover:bg-white hover:text-[#333333] transition-colors"
-            >
-              Подробнее
-            </a>
-          </div>
+          <a 
+            href="/cooperation" 
+            className="inline-flex items-center px-6 py-3 bg-white text-[#333333] font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Узнать подробности
+          </a>
         </div>
       </div>
     </section>

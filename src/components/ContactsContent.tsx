@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { MapPin, Phone, Clock, Mail, Send, Building } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,9 @@ const containerStyle = {
 
 const mapCenter = { lat: 51.1694, lng: 71.4491 }; // Координаты офиса
 
+// Мемоизируем Google Maps API библиотеки
+const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = [];
+
 export function ContactsContent() {
   const [formData, setFormData] = useState({
     name: "",
@@ -36,16 +39,19 @@ export function ContactsContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Мемоизируем обработчики событий
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -73,10 +79,44 @@ export function ContactsContent() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData]);
+
+  // Мемоизируем обработчики Google Maps
+  const handleMapLoad = useCallback(() => {
+    setMapLoaded(true);
+    setMapError(false);
+  }, []);
+
+  const handleMapError = useCallback(() => {
+    setMapError(true);
+    console.warn('Google Maps failed to load, using fallback');
+  }, []);
+
+  const handleMarkerClick = useCallback(() => {
+    setSelectedMarker(locations[0].id);
+  }, []);
+
+  const handleInfoWindowClose = useCallback(() => {
+    setSelectedMarker(null);
+  }, []);
 
   // Получаем Google Maps API ключ
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+  // Мемоизируем опции карты
+  const mapOptions = useMemo(() => ({
+    styles: [
+      {
+        featureType: "poi.business",
+        stylers: [{ visibility: "off" }]
+      }
+    ],
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: true,
+    streetViewControl: true,
+    fullscreenControl: true
+  }), []);
 
   return (
     <section className="py-16 bg-white">
@@ -164,32 +204,31 @@ export function ContactsContent() {
           {/* Google Maps */}
           <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
             <div className="h-full min-h-[500px] relative">
-              {GOOGLE_MAPS_API_KEY ? (
-                <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+              {GOOGLE_MAPS_API_KEY && !mapError ? (
+                <LoadScript 
+                  googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                  libraries={libraries}
+                  onLoad={handleMapLoad}
+                  onError={handleMapError}
+                  preventGoogleFontsLoading={true}
+                  loadingElement={
+                    <div className="h-full flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333]"></div>
+                    </div>
+                  }
+                >
                   <GoogleMap
                     mapContainerStyle={{ ...containerStyle, height: '500px' }}
                     center={mapCenter}
                     zoom={16}
-                    options={{
-                      styles: [
-                        {
-                          featureType: "poi.business",
-                          stylers: [{ visibility: "off" }]
-                        }
-                      ],
-                      disableDefaultUI: false,
-                      zoomControl: true,
-                      mapTypeControl: true,
-                      streetViewControl: true,
-                      fullscreenControl: true
-                    }}
+                    options={mapOptions}
                   >
                     <Marker
                       position={locations[0].coordinates}
-                      onClick={() => setSelectedMarker(locations[0].id)}
+                      onClick={handleMarkerClick}
                       icon={{
                         url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: typeof window !== 'undefined' && window.google?.maps 
+                        scaledSize: mapLoaded && typeof window !== 'undefined' && window.google?.maps 
                           ? new window.google.maps.Size(32, 32) 
                           : undefined
                       }}
@@ -198,7 +237,7 @@ export function ContactsContent() {
                     {selectedMarker !== null && (
                       <InfoWindow
                         position={locations[0].coordinates}
-                        onCloseClick={() => setSelectedMarker(null)}
+                        onCloseClick={handleInfoWindowClose}
                       >
                         <div className="p-3 max-w-xs">
                           <h3 className="font-bold text-gray-800 mb-2">{locations[0].title}</h3>
@@ -211,7 +250,7 @@ export function ContactsContent() {
                   </GoogleMap>
                 </LoadScript>
               ) : (
-                // Fallback если нет API ключа
+                // Fallback если нет API ключа или произошла ошибка
                 <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
                   <div className="text-center p-8">
                     <div className="w-24 h-24 bg-[#333333] rounded-full flex items-center justify-center mx-auto mb-4">

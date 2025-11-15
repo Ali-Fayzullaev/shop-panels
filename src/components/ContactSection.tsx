@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   GoogleMap,
   LoadScript,
@@ -28,11 +28,50 @@ const containerStyle = {
 
 const mapCenter = { lat: 51.1694, lng: 71.4491 }; // Координаты офиса
 
+// Мемоизируем Google Maps API библиотеки
+const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = [];
+
 export function ContactSection() {
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
   // Получаем Google Maps API ключ
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
+  // Мемоизируем обработчики
+  const handleMapLoad = useCallback(() => {
+    setMapLoaded(true);
+    setMapError(false);
+  }, []);
+
+  const handleMapError = useCallback(() => {
+    setMapError(true);
+    console.warn('Google Maps failed to load in contact section, using fallback');
+  }, []);
+
+  const handleMarkerClick = useCallback(() => {
+    setSelectedMarker(locations[0].id);
+  }, []);
+
+  const handleInfoWindowClose = useCallback(() => {
+    setSelectedMarker(null);
+  }, []);
+
+  // Мемоизируем опции карты
+  const mapOptions = useMemo(() => ({
+    styles: [
+      {
+        featureType: "poi.business",
+        stylers: [{ visibility: "off" }],
+      },
+    ],
+    disableDefaultUI: false,
+    zoomControl: true,
+    mapTypeControl: true,
+    streetViewControl: true,
+    fullscreenControl: true,
+  }), []);
 
   return (
     <section className="py-16 bg-white">
@@ -75,62 +114,61 @@ export function ContactSection() {
                     </a>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-[#333333] mt-1 shrink-0" />
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-[#333333] shrink-0" />
                     <span className="text-[#989898]">{location.hours}</span>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
 
-            {/* Дополнительная информация */}
-            <div className="bg-[#333333] p-6 text-white">
-              <h3 className="text-xl font-bold mb-4">Связаться с нами</h3>
-              <p className="text-gray-300 mb-4">
-                Остались вопросы? Звоните нам или приезжайте в наши офисы. Наши
-                специалисты помогут выбрать идеальные панели для вашего проекта.
-              </p>
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 shrink-0" />
-                <a
-                  href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-                  className="text-lg font-semibold hover:text-gray-300 transition-colors"
-                >
-                  {COMPANY_INFO.phone}
-                </a>
-              </div>
+          {/* Контактная информация */}
+          <div className="bg-[#333333] p-8 text-white flex flex-col justify-center">
+            <h3 className="text-2xl font-bold mb-6">Свяжитесь с нами</h3>
+            <p className="text-gray-300 mb-6 leading-relaxed">
+              Наши опытные консультанты готовы помочь вам выбрать идеальные панели. Наши
+              специалисты помогут выбрать идеальные панели для вашего проекта.
+            </p>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 shrink-0" />
+              <a
+                href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
+                className="text-lg font-semibold hover:text-gray-300 transition-colors"
+              >
+                {COMPANY_INFO.phone}
+              </a>
             </div>
           </div>
 
           {/* Google Maps */}
           <div className="bg-white overflow-hidden shadow-md">
             <div className="h-full min-h-[400px] lg:min-h-[500px] relative">
-              {GOOGLE_MAPS_API_KEY ? (
-                <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+              {GOOGLE_MAPS_API_KEY && !mapError ? (
+                <LoadScript 
+                  googleMapsApiKey={GOOGLE_MAPS_API_KEY}
+                  libraries={libraries}
+                  onLoad={handleMapLoad}
+                  onError={handleMapError}
+                  preventGoogleFontsLoading={true}
+                  loadingElement={
+                    <div className="h-full flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333]"></div>
+                    </div>
+                  }
+                >
                   <GoogleMap
                     mapContainerStyle={{ ...containerStyle, height: "500px" }}
                     center={mapCenter}
                     zoom={16}
-                    options={{
-                      styles: [
-                        {
-                          featureType: "poi.business",
-                          stylers: [{ visibility: "off" }],
-                        },
-                      ],
-                      disableDefaultUI: false,
-                      zoomControl: true,
-                      mapTypeControl: true,
-                      streetViewControl: true,
-                      fullscreenControl: true,
-                    }}
+                    options={mapOptions}
                   >
                     <Marker
                       position={locations[0].coordinates}
-                      onClick={() => setSelectedMarker(locations[0].id)}
+                      onClick={handleMarkerClick}
                       icon={{
                         url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: typeof window !== 'undefined' && window.google?.maps 
+                        scaledSize: mapLoaded && typeof window !== 'undefined' && window.google?.maps 
                           ? new window.google.maps.Size(32, 32) 
                           : undefined,
                       }}
@@ -139,7 +177,7 @@ export function ContactSection() {
                     {selectedMarker !== null && (
                       <InfoWindow
                         position={locations[0].coordinates}
-                        onCloseClick={() => setSelectedMarker(null)}
+                        onCloseClick={handleInfoWindowClose}
                       >
                         <div className="p-3 max-w-xs">
                           <h3 className="font-bold text-gray-800 mb-2">
@@ -160,7 +198,7 @@ export function ContactSection() {
                   </GoogleMap>
                 </LoadScript>
               ) : (
-                // Fallback если нет API ключа
+                // Fallback если нет API ключа или произошла ошибка
                 <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
                   <div className="text-center p-8">
                     <div className="w-24 h-24 bg-[#333333] flex items-center justify-center mx-auto mb-4">
@@ -187,28 +225,16 @@ export function ContactSection() {
                   </div>
                 </div>
               )}
-
-              {/* Легенда */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 shadow-xl border border-gray-200 z-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-6 h-6 bg-red-500 flex items-center justify-center shadow-md">
-                    <Building className="h-3 w-3 text-white" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-800">
-                    Главный офис
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500 font-medium">
-                  📍 Улица Анет баба, 9 • Астана
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Призыв к действию */}
         <div className="text-center">
-          <p className="text-lg text-[#989898] mb-6">
+          <h3 className="text-2xl font-bold text-[#333333] mb-4">
+            Приезжайте к нам в офис
+          </h3>
+          <p className="text-lg text-[#989898] mb-8 max-w-2xl mx-auto">
             Приезжайте к нам, чтобы увидеть качество панелей своими глазами
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

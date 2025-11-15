@@ -25,9 +25,22 @@ const nextConfig: NextConfig = {
   generateEtags: true,
   // Строгие настройки React
   reactStrictMode: true,
+  // Настройки для предотвращения автоматических перезагрузок
+  onDemandEntries: {
+    // Время ожидания перед выгрузкой страницы (в миллисекундах)
+    maxInactiveAge: 60 * 1000 * 60, // 60 минут
+    // Количество страниц для хранения одновременно
+    pagesBufferLength: 5,
+  },
+  // Настройки Turbopack для стабильности
+  turbopack: {
+    root: process.cwd(),
+  },
   // Экспериментальные функции для производительности
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // Отключение автоматической перезагрузки при ошибках
+    forceSwcTransforms: false,
   },
   // Настройки заголовков для лучшего кеширования
   async headers() {

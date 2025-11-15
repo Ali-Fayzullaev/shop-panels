@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/data/types";
 import Image from "next/image";
@@ -21,16 +21,21 @@ export default function CartPage() {
 
   const handleOrderSubmit = async () => {
     await sendOrder(state.items, state.total, customerInfo);
-    if (!error) {
-      // Очищаем корзину после успешной отправки
-      setTimeout(() => {
+  };
+
+  // Эффект для очистки корзины после успешной отправки
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
         clearCart();
         setCustomerInfo({ name: '', phone: '', email: '' });
         setShowContactForm(false);
         resetState();
       }, 3000);
+
+      return () => clearTimeout(timer);
     }
-  };
+  }, [isSuccess, clearCart, resetState]);
 
   if (state.items.length === 0) {
     return (
