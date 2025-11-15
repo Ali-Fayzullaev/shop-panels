@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   NavigationMenu,
@@ -12,13 +12,31 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Menu, ChevronDown } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 const Header = () => {
   const { getTotalItems } = useCart();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [isBuyersOpen, setIsBuyersOpen] = useState(false);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <header className="sticky top-0 z-50" style={{ backgroundColor: '#333333' }}>
@@ -223,30 +241,170 @@ const Header = () => {
               )}
             </Button>
           </Link>
-        </div>
 
-        {/* Mobile Navigation Menu (Hidden by default, you can add hamburger menu logic) */}
-        <div className="md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </Button>
+          {/* Mobile Navigation Menu */}
+          <div className="lg:hidden">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10"
+                >
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent 
+                side="right" 
+                className="w-[300px] sm:w-[400px] bg-[#333333] border-l border-white/10"
+              >
+                <SheetHeader>
+                  <SheetTitle className="text-white">{COMPANY_INFO.name}</SheetTitle>
+                  <SheetDescription className="text-white/80">
+                    Навигация по сайту
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-4">
+                  {/* Каталог с выпадающим меню */}
+                  <Collapsible open={isCatalogOpen} onOpenChange={setIsCatalogOpen}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left hover:bg-white/10 rounded-md text-white">
+                      <span className="font-medium">Каталог</span>
+                      <ChevronDown className={cn("w-4 h-4 transition-transform", isCatalogOpen && "rotate-180")} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="ml-4 mt-2 space-y-2">
+                      <Link 
+                        href="/bambukovye-paneli"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Бамбуковые панели
+                      </Link>
+                      <Link 
+                        href="/riflenye-paneli"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Рифленые панели
+                      </Link>
+                      <Link 
+                        href="/paneli-s-3d-pechatyu"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Панели с 3D печатью
+                      </Link>
+                      <Link 
+                        href="/alum"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Вспененный алюминий
+                      </Link>
+                      <Link 
+                        href="/flexible"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Гибкая керамика
+                      </Link>
+                      <Link 
+                        href="/montazhnye-profili"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Монтажные профили
+                      </Link>
+                      <Link 
+                        href="/sale"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Акции
+                      </Link>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Покупателям с выпадающим меню */}
+                  <Collapsible open={isBuyersOpen} onOpenChange={setIsBuyersOpen}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left hover:bg-white/10 rounded-md text-white">
+                      <span className="font-medium">Покупателям</span>
+                      <ChevronDown className={cn("w-4 h-4 transition-transform", isBuyersOpen && "rotate-180")} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="ml-4 mt-2 space-y-2">
+                      <Link 
+                        href="/sale"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Акции
+                      </Link>
+                      <Link 
+                        href="/catalog"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Каталог
+                      </Link>
+                      <Link 
+                        href="/visualizer"
+                        className="block p-2 text-sm hover:bg-white/10 rounded-md text-white/90"
+                        onClick={closeMobileMenu}
+                      >
+                        Визуализатор
+                      </Link>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Простые ссылки */}
+                  <Link
+                    href="/visualizer"
+                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    onClick={closeMobileMenu}
+                  >
+                    Визуализатор
+                  </Link>
+                  <Link
+                    href="/cooperation"
+                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    onClick={closeMobileMenu}
+                  >
+                    Сотрудничество
+                  </Link>
+                  <Link
+                    href="/dealers"
+                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    onClick={closeMobileMenu}
+                  >
+                    Дилеры
+                  </Link>
+                  <Link
+                    href="/contacts"
+                    className="block p-2 font-medium hover:bg-white/10 rounded-md text-white"
+                    onClick={closeMobileMenu}
+                  >
+                    Контакты
+                  </Link>
+
+                  {/* Телефон */}
+                  <div className="border-t border-white/20 pt-4 mt-6">
+                    <a
+                      href={`tel:${COMPANY_INFO.phoneClean}`}
+                      className="flex items-center p-2 text-blue-400 hover:bg-white/10 rounded-md"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                      {COMPANY_INFO.phone}
+                    </a>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </nav>
     </header>
