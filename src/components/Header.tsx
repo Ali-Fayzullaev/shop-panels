@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart, Menu, ChevronDown } from "lucide-react";
+import { ShoppingCart, Menu, ChevronDown, X } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 const Header = () => {
@@ -255,11 +255,19 @@ const Header = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent 
-                side="right" 
+                side="left" 
                 className="w-[300px] sm:w-[400px] bg-[#333333] border-l border-white/10"
               >
-                <SheetHeader>
-                  <SheetTitle className="text-white">{COMPANY_INFO.name}</SheetTitle>
+                <SheetHeader className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 text-white hover:bg-white/10"
+                    onClick={closeMobileMenu}
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                  <SheetTitle className="text-white pr-10">{COMPANY_INFO.name}</SheetTitle>
                   <SheetDescription className="text-white/80">
                     Навигация по сайту
                   </SheetDescription>

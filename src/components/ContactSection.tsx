@@ -1,20 +1,39 @@
 "use client";
 
-import React from 'react';
-import { MapPin, Phone, Clock } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  GoogleMap,
+  LoadScript,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
+import { MapPin, Phone, Clock, Building } from "lucide-react";
 import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
 const locations = [
   {
     id: 1,
     title: "Главный офис",
-    address: COMPANY_INFO.address,
+    address: "Улица Анет баба, 9, Астана",
     phone: COMPANY_INFO.phone,
-    hours: COMPANY_INFO.workingHours
-  }
+    hours: COMPANY_INFO.workingHours,
+    coordinates: { lat: 51.1694, lng: 71.4491 }, // Координаты для Улица Анет баба, 9, Астана
+  },
 ];
 
+const containerStyle = {
+  width: "100%",
+  height: "100%",
+};
+
+const mapCenter = { lat: 51.1694, lng: 71.4491 }; // Координаты офиса
+
 export function ContactSection() {
+  const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+
+  // Получаем Google Maps API ключ
+  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -23,7 +42,8 @@ export function ContactSection() {
             Как нас найти
           </h2>
           <p className="text-lg text-[#989898] max-w-2xl mx-auto">
-            Приходите к нам в офис или шоурум, чтобы посмотреть образцы панелей вживую и получить консультацию
+            Приходите к нам в офис или шоурум, чтобы посмотреть образцы панелей
+            вживую и получить консультацию
           </p>
         </div>
 
@@ -31,27 +51,30 @@ export function ContactSection() {
           {/* Карточки с адресами */}
           <div className="space-y-6">
             {locations.map((location) => (
-              <div key={location.id} className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div
+                key={location.id}
+                className="bg-white p-6 shadow-md hover:shadow-lg transition-shadow duration-300"
+              >
                 <h3 className="text-xl font-bold text-[#333333] mb-4">
                   {location.title}
                 </h3>
-                
+
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-[#333333] mt-1 shrink-0" />
                     <span className="text-[#989898]">{location.address}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-[#333333] shrink-0" />
-                    <a 
-                      href={`tel:${location.phone}`} 
+                    <a
+                      href={`tel:${location.phone}`}
                       className="text-[#989898] hover:text-[#333333] transition-colors"
                     >
                       {location.phone}
                     </a>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 text-[#333333] mt-1 shrink-0" />
                     <span className="text-[#989898]">{location.hours}</span>
@@ -59,20 +82,18 @@ export function ContactSection() {
                 </div>
               </div>
             ))}
-            
+
             {/* Дополнительная информация */}
-            <div className="bg-[#333333] rounded-lg p-6 text-white">
-              <h3 className="text-xl font-bold mb-4">
-                Связаться с нами
-              </h3>
+            <div className="bg-[#333333] p-6 text-white">
+              <h3 className="text-xl font-bold mb-4">Связаться с нами</h3>
               <p className="text-gray-300 mb-4">
-                Остались вопросы? Звоните нам или приезжайте в наши офисы. 
-                Наши специалисты помогут выбрать идеальные панели для вашего проекта.
+                Остались вопросы? Звоните нам или приезжайте в наши офисы. Наши
+                специалисты помогут выбрать идеальные панели для вашего проекта.
               </p>
               <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0" />
-                <a 
-                  href={formatPhoneForCall(COMPANY_INFO.phoneClean)} 
+                <a
+                  href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
                   className="text-lg font-semibold hover:text-gray-300 transition-colors"
                 >
                   {COMPANY_INFO.phone}
@@ -81,17 +102,106 @@ export function ContactSection() {
             </div>
           </div>
 
-          {/* Карта */}
-          <div className="bg-white rounded-lg overflow-hidden shadow-md">
-            <div className="h-full min-h-[400px] lg:min-h-[500px]">
-              <iframe
-                src="https://yandex.ru/map-widget/v1/?um=constructor%3A8f4c5d89f0a6b3c7e2d9a1f4c8e6b2d5a9c3f7e1b4d8c2f6a9e3d7b1c5f9a2e6&amp;source=constructor"
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="border-0"
-                title="Наше расположение"
-              ></iframe>
+          {/* Google Maps */}
+          <div className="bg-white overflow-hidden shadow-md">
+            <div className="h-full min-h-[400px] lg:min-h-[500px] relative">
+              {GOOGLE_MAPS_API_KEY ? (
+                <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                  <GoogleMap
+                    mapContainerStyle={{ ...containerStyle, height: "500px" }}
+                    center={mapCenter}
+                    zoom={16}
+                    options={{
+                      styles: [
+                        {
+                          featureType: "poi.business",
+                          stylers: [{ visibility: "off" }],
+                        },
+                      ],
+                      disableDefaultUI: false,
+                      zoomControl: true,
+                      mapTypeControl: true,
+                      streetViewControl: true,
+                      fullscreenControl: true,
+                    }}
+                  >
+                    <Marker
+                      position={locations[0].coordinates}
+                      onClick={() => setSelectedMarker(locations[0].id)}
+                      icon={{
+                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: typeof window !== 'undefined' && window.google?.maps 
+                          ? new window.google.maps.Size(32, 32) 
+                          : undefined,
+                      }}
+                    />
+
+                    {selectedMarker !== null && (
+                      <InfoWindow
+                        position={locations[0].coordinates}
+                        onCloseClick={() => setSelectedMarker(null)}
+                      >
+                        <div className="p-3 max-w-xs">
+                          <h3 className="font-bold text-gray-800 mb-2">
+                            {locations[0].title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-2">
+                            {locations[0].address}
+                          </p>
+                          <p className="text-gray-600 text-sm mb-2">
+                            {locations[0].phone}
+                          </p>
+                          <p className="text-gray-600 text-xs">
+                            {locations[0].hours}
+                          </p>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+              ) : (
+                // Fallback если нет API ключа
+                <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
+                  <div className="text-center p-8">
+                    <div className="w-24 h-24 bg-[#333333] flex items-center justify-center mx-auto mb-4">
+                      <Building className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#333333] mb-2">
+                      Наш офис в Астане
+                    </h3>
+                    <p className="text-[#989898] mb-4">
+                      Улица Анет баба, 9, Астана
+                    </p>
+                    <button
+                      onClick={() => {
+                        const mapUrl = `https://yandex.com/maps/?text=${encodeURIComponent(
+                          "Улица Анет баба, 9, Астана"
+                        )}&z=16`;
+                        window.open(mapUrl, "_blank");
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#333333] text-white hover:bg-[#333333]/80 transition-colors"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Открыть в Яндекс.Картах
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Легенда */}
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 shadow-xl border border-gray-200 z-10">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-6 h-6 bg-red-500 flex items-center justify-center shadow-md">
+                    <Building className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-800">
+                    Главный офис
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 font-medium">
+                  📍 Улица Анет баба, 9 • Астана
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -104,16 +214,18 @@ export function ContactSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-              className="inline-flex items-center justify-center px-6 py-3 bg-[#333333] hover:bg-[#333333]/80 text-white font-semibold  transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-[#333333] hover:bg-[#333333]/80 text-white font-semibold transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />
               Позвонить
             </a>
             <a
-              href="https://yandex.ru/maps/213/moscow/?text=Рязанский%20проспект%202%20корп%203"
+              href={`https://yandex.com/maps/?text=${encodeURIComponent(
+                "Улица Анет баба, 9, Астана"
+              )}&z=16`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-[#333333] font-semibold  border-2 border-[#333333] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-[#333333] font-semibold border-2 border-[#333333] transition-colors"
             >
               <MapPin className="h-5 w-5 mr-2" />
               Открыть в картах

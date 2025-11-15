@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { DealersHero } from "@/components/DealersHero";
-import { DealersContent } from "@/components/DealersContent";
+import DealersContent from "@/components/DealersContent";
 
 export const metadata: Metadata = {
   title: "Дилеры - Стеновые панели",

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MapPin, Phone, Clock, Mail, Send } from 'lucide-react';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { MapPin, Phone, Clock, Mail, Send, Building } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
@@ -9,12 +10,20 @@ const locations = [
   {
     id: 1,
     title: "Главный офис",
-    address: COMPANY_INFO.address,
+    address: "Улица Анет баба, 9, Астана",
     phone: COMPANY_INFO.phone,
     hours: COMPANY_INFO.workingHours,
-    description: "Основной офис компании с полным ассортиментом панелей"
+    description: "Основной офис компании с полным ассортиментом панелей",
+    coordinates: { lat: 51.1694, lng: 71.4491 } // Координаты для Улица Анет баба, 9, Астана
   }
 ];
+
+const containerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
+const mapCenter = { lat: 51.1694, lng: 71.4491 }; // Координаты офиса
 
 export function ContactsContent() {
   const [formData, setFormData] = useState({
@@ -25,6 +34,8 @@ export function ContactsContent() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -37,16 +48,35 @@ export function ContactsContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus('idle');
     
-    // Здесь будет API запрос
-    setTimeout(() => {
-      console.log("Form submitted:", formData);
+    try {
+      const response = await fetch('/api/send-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: "", phone: "+7", email: "", message: "" });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('Ошибка отправки заявки:', error);
+      setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
-      // Сброс формы
-      setFormData({ name: "", phone: "+7", email: "", message: "" });
-      alert("Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.");
-    }, 2000);
+    }
   };
+
+  // Получаем Google Maps API ключ
+  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   return (
     <section className="py-16 bg-white">
@@ -57,7 +87,7 @@ export function ContactsContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a 
               href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-              className="group bg-[#333333]  p-6 hover:bg-[#333333]/80 transition-all duration-300 text-white text-center"
+              className="group bg-[#333333] p-6 hover:bg-[#333333]/80 transition-all duration-300 text-white text-center"
             >
               <Phone className="h-8 w-8 mx-auto mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="font-semibold mb-2">Позвоните нам</h3>
@@ -91,7 +121,7 @@ export function ContactsContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
             {locations.map((location) => (
-              <div key={location.id} className="bg-gray-50 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+              <div key={location.id} className="bg-gray-50 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="aspect-square p-8 flex flex-col justify-center">
                   <h3 className="text-2xl font-bold text-[#333333] mb-6 text-center">
                     {location.title}
@@ -131,28 +161,115 @@ export function ContactsContent() {
         {/* Карта и форма */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           
-          {/* Карта */}
+          {/* Google Maps */}
           <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
-            <div className="h-full min-h-[500px]">
-              <iframe
-                src="https://yandex.ru/map-widget/v1/?um=constructor%3A8f4c5d89f0a6b3c7e2d9a1f4c8e6b2d5a9c3f7e1b4d8c2f6a9e3d7b1c5f9a2e6&amp;source=constructor"
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="border-0"
-                title="Карта с нашими офисами"
-              ></iframe>
+            <div className="h-full min-h-[500px] relative">
+              {GOOGLE_MAPS_API_KEY ? (
+                <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                  <GoogleMap
+                    mapContainerStyle={{ ...containerStyle, height: '500px' }}
+                    center={mapCenter}
+                    zoom={16}
+                    options={{
+                      styles: [
+                        {
+                          featureType: "poi.business",
+                          stylers: [{ visibility: "off" }]
+                        }
+                      ],
+                      disableDefaultUI: false,
+                      zoomControl: true,
+                      mapTypeControl: true,
+                      streetViewControl: true,
+                      fullscreenControl: true
+                    }}
+                  >
+                    <Marker
+                      position={locations[0].coordinates}
+                      onClick={() => setSelectedMarker(locations[0].id)}
+                      icon={{
+                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: window.google?.maps ? new window.google.maps.Size(32, 32) : undefined
+                      }}
+                    />
+                    
+                    {selectedMarker !== null && (
+                      <InfoWindow
+                        position={locations[0].coordinates}
+                        onCloseClick={() => setSelectedMarker(null)}
+                      >
+                        <div className="p-3 max-w-xs">
+                          <h3 className="font-bold text-gray-800 mb-2">{locations[0].title}</h3>
+                          <p className="text-gray-600 text-sm mb-2">{locations[0].address}</p>
+                          <p className="text-gray-600 text-sm mb-2">{locations[0].phone}</p>
+                          <p className="text-gray-600 text-xs">{locations[0].hours}</p>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+              ) : (
+                // Fallback если нет API ключа
+                <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
+                  <div className="text-center p-8">
+                    <div className="w-24 h-24 bg-[#333333] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Building className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#333333] mb-2">
+                      Наш офис в Астане
+                    </h3>
+                    <p className="text-[#989898] mb-4">
+                      Улица Анет баба, 9, Астана
+                    </p>
+                    <button
+                      onClick={() => {
+                        const mapUrl = `https://yandex.com/maps/?text=${encodeURIComponent("Улица Анет баба, 9, Астана")}&z=16`;
+                        window.open(mapUrl, '_blank');
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#333333] text-white rounded-lg hover:bg-[#333333]/80 transition-colors"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Открыть в Яндекс.Картах
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {/* Легенда */}
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-gray-200 z-10">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md">
+                    <Building className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-800">Главный офис</span>
+                </div>
+                <div className="text-xs text-gray-500 font-medium">
+                  📍 Улица Анет баба, 9 • Астана
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Форма обратной связи */}
-          <div id="contact-form" className="bg-[#333333] rounded-lg p-8 text-white">
+          <div id="contact-form" className="bg-[#333333] p-8 text-white">
             <h3 className="text-2xl font-bold mb-6 text-center">
               Оставьте заявку
             </h3>
             <p className="text-gray-300 mb-8 text-center">
               Мы свяжемся с вами в течение 15 минут
             </p>
+            
+            {submitStatus === 'success' && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg text-green-300 text-center">
+                ✅ Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-center">
+                ❌ Произошла ошибка при отправке. Попробуйте позже или позвоните нам.
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -245,8 +362,6 @@ export function ContactsContent() {
             </form>
           </div>
         </div>
-
-       
       </div>
     </section>
   );

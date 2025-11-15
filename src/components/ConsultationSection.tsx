@@ -18,6 +18,10 @@ export function ConsultationSection() {
     question: ""
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -26,11 +30,39 @@ export function ConsultationSection() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Здесь будет API запрос
-    console.log("Form submitted:", formData);
-    // Пока просто логируем данные
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    
+    try {
+      const response = await fetch('/api/send-consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: "", phone: "+7", email: "", question: "" });
+        // Закрываем диалог через 2 секунды после успешной отправки
+        setTimeout(() => {
+          setIsDialogOpen(false);
+          setSubmitStatus('idle');
+        }, 2000);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('Ошибка отправки заявки на консультацию:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -44,7 +76,7 @@ export function ConsultationSection() {
             Мы перезвоним в течение 15 минут, ответим на все вопросы и сделаем вам выгодное предложение
           </p>
 
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
                 size="lg"
@@ -60,11 +92,23 @@ export function ConsultationSection() {
                 </DialogTitle>
               </DialogHeader>
               
+              {submitStatus === 'success' && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-center">
+                  ✅ Заявка успешно отправлена! Мы перезвоним вам в течение 15 минут.
+                </div>
+              )}
+
+              {submitStatus === 'error' && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-center">
+                  ❌ Произошла ошибка при отправке. Попробуйте позже или позвоните нам напрямую.
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Имя */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 ">
-                    Имя
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Имя *
                   </label>
                   <input
                     type="text"
@@ -73,7 +117,7 @@ export function ConsultationSection() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border-0 border-b text-gray-700  outline-none transition-colors"
+                    className="w-full px-4 py-3 border-0 border-b border-gray-300 text-gray-700 focus:border-[#333333] outline-none transition-colors"
                     placeholder="Введите ваше имя"
                   />
                 </div>
@@ -81,7 +125,7 @@ export function ConsultationSection() {
                 {/* Телефон */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Телефон
+                    Телефон *
                   </label>
                   <input
                     type="tel"
@@ -90,7 +134,7 @@ export function ConsultationSection() {
                     value={formData.phone}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border-0 border-b text-gray-700  outline-none transition-colors"
+                    className="w-full px-4 py-3 border-0 border-b border-gray-300 text-gray-700 focus:border-[#333333] outline-none transition-colors"
                     placeholder="+7 (000) 000-00-00"
                   />
                 </div>
@@ -98,7 +142,7 @@ export function ConsultationSection() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
+                    Email *
                   </label>
                   <input
                     type="email"
@@ -107,7 +151,7 @@ export function ConsultationSection() {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border-0 border-b text-gray-700  outline-none transition-colors"
+                    className="w-full px-4 py-3 border-0 border-b border-gray-300 text-gray-700 focus:border-[#333333] outline-none transition-colors"
                     placeholder="example@email.com"
                   />
                 </div>
@@ -123,7 +167,7 @@ export function ConsultationSection() {
                     value={formData.question}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 focus:ring-2  outline-none transition-colors resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-[#333333] focus:border-[#333333] outline-none transition-colors resize-none"
                     placeholder="Опишите ваш вопрос или пожелания"
                   />
                 </div>
@@ -131,9 +175,17 @@ export function ConsultationSection() {
                 {/* Кнопка отправки */}
                 <Button 
                   type="submit" 
-                  className="w-full py-3 text-sm font-semibold bg-black hover:bg-black/50 text-white"
+                  disabled={isSubmitting}
+                  className="w-full py-3 text-sm font-semibold bg-[#333333] hover:bg-[#333333]/80 text-white disabled:opacity-50"
                 >
-                  Оставить заявку
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Отправляем...
+                    </>
+                  ) : (
+                    'Оставить заявку'
+                  )}
                 </Button>
 
                 {/* Политика конфиденциальности */}

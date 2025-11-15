@@ -1,152 +1,466 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { MapPin, Phone, Building, User } from 'lucide-react';
-import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
-const dealers = [
+// Определяем тип для дилера
+interface Dealer {
+  id: number;
+  city: string;
+  company: string;
+  contact: string;
+  entity: string;
+  address: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
+
+const dealers: Dealer[] = [
   {
     id: 1,
-    city: "Великий Новгород",
+    city: "Алматы",
     company: "ART I SHOCK",
-    contact: "+7 (911) 631-14-07",
-    entity: "ООО Артишок",
-    address: "г. Великий Новгород, ул. Московская 53, центральный вход"
+    contact: "+7 (727) 350-14-07",
+    entity: "ТОО Артишок",
+    address: "г. Алматы, пр. Абая 53, центральный вход",
+    coordinates: { lat: 43.2389, lng: 76.9286 }
   },
   {
     id: 2,
-    city: "Владивосток",
-    company: "Народный проспект",
-    contact: "+7 (984) 199-75-57",
-    entity: "ИП Дятлова Я. В.",
-    address: "г. Владивосток, Народный проспект 28, вход через салон «Светский»"
+    city: "Нур-Султан",
+    company: "Capital Decor",
+    contact: "+7 (7172) 55-75-57",
+    entity: "ИП Даниярова А. Ж.",
+    address: "г. Нур-Султан, ул. Мангилик Ел 28",
+    coordinates: { lat: 51.1282, lng: 71.4308 }
   },
   {
     id: 3,
-    city: "Владивосток",
-    company: "АТЦ «Рондо»",
-    contact: "+7 (924) 445-14-21",
-    entity: "ИП Конечников Д. С.",
-    address: "г. Владивосток, АТЦ «Рондо»"
+    city: "Шымкент",
+    company: "South Design",
+    contact: "+7 (7252) 45-14-21",
+    entity: "ИП Кажгалиев Д. С.",
+    address: "г. Шымкент, пр. Тауелсиздик 40",
+    coordinates: { lat: 42.2951, lng: 69.6039 }
   },
   {
     id: 4,
-    city: "Благовещенск",
+    city: "Караганда",
     company: "MASTER DÉCOR",
-    contact: "+7 (914) 333-01-08",
-    entity: "ИП Дятлова Я. В.",
-    address: "г. Благовещенск, ул. Воронкова 4, БЦ «Статус»"
+    contact: "+7 (7212) 33-01-08",
+    entity: "ИП Жанабаева Г. К.",
+    address: "г. Караганда, ул. Гоголя 4, БЦ «Центральный»",
+    coordinates: { lat: 49.8043, lng: 73.1247 }
   },
   {
     id: 5,
-    city: "Волгоград",
-    company: "Оранж Дизайн",
-    contact: "+7 (903) 317-42-92",
-    entity: "ООО «ОРАНДЖ ДИЗАЙН»",
-    address: "г. Волгоград, ул. 7 Гвардейской Дивизии 17"
+    city: "Актобе",
+    company: "West Design",
+    contact: "+7 (7132) 17-42-92",
+    entity: "ТОО «WEST ДИЗАЙН»",
+    address: "г. Актобе, ул. Абая 17",
+    coordinates: { lat: 50.2872, lng: 50.2818 }
   },
   {
     id: 6,
-    city: "Владикавказ",
+    city: "Тараз",
     company: "DALI",
-    contact: "+7 (928) 071-48-61",
-    entity: "ИП Кузнецов Я. Г.",
-    address: "г. Владикавказ, ул. Весенняя 1а, центр «Весна»"
+    contact: "+7 (7262) 71-48-61",
+    entity: "ИП Абдуллаев Я. Г.",
+    address: "г. Тараз, ул. Жамбыла 1а",
+    coordinates: { lat: 42.8941, lng: 71.3784 }
   },
   {
     id: 7,
-    city: "Казань",
+    city: "Павлодар",
     company: "Villa Design",
-    contact: "+7 (917) 399-11-15",
-    entity: "ИП Кутузова Ю. Е.",
-    address: "Республика Татарстан, г. Казань, ул. Сибгата Хакима 40"
+    contact: "+7 (7182) 99-11-15",
+    entity: "ИП Кузнецова Ю. Е.",
+    address: "г. Павлодар, ул. Сатпаева 40",
+    coordinates: { lat: 52.2869, lng: 76.9833 }
   },
   {
     id: 8,
-    city: "Киров",
+    city: "Усть-Каменогорск",
     company: "Декор стен",
-    contact: "+7 (900) 526-15-59",
+    contact: "+7 (7232) 26-15-59",
     entity: "ИП Ворожцова Н. Н.",
-    address: "г. Киров, ул. Солнечная 8В, салон «Декор стен»"
+    address: "г. Усть-Каменогорск, ул. Ленина 8В",
+    coordinates: { lat: 50.0043, lng: 82.6003 }
   },
   {
     id: 9,
-    city: "Киров",
-    company: "ТЦ «Загородный дом»",
-    contact: "+7 (901) 666-51-51",
+    city: "Семей",
+    company: "East Decor",
+    contact: "+7 (7222) 66-51-51",
     entity: "ИП Богданова Л. Г.",
-    address: "г. Киров, ТЦ «Загородный дом»"
+    address: "г. Семей, ул. Абая 100",
+    coordinates: { lat: 50.4183, lng: 80.2536 }
   },
   {
     id: 10,
-    city: "Иркутск",
+    city: "Кызылорда",
     company: "BOGDANOVA Decor",
-    contact: "+7 (913) 911-40-90",
-    entity: "ООО «Стройкомплект»",
-    address: "г. Иркутск, ул. Рабочая 18д, ТЦ «Фортуна. Стройматериалы»"
+    contact: "+7 (7242) 11-40-90",
+    entity: "ТОО «Стройкомплект»",
+    address: "г. Кызылорда, ул. Амангельды 18д",
+    coordinates: { lat: 44.8298, lng: 65.4503 }
   },
   {
     id: 11,
-    city: "Краснодар",
+    city: "Атырау",
     company: "Онлайн декор",
-    contact: "+7 (929) 849-88-85",
-    entity: "Онлайндекор.рф",
-    address: "г. Краснодар, ул. Шоссе Нефтяников 18, к2 151, 1 этаж"
+    contact: "+7 (7122) 49-88-85",
+    entity: "Онлайндекор.kz",
+    address: "г. Атырау, пр. Достык 18, к2 151",
+    coordinates: { lat: 47.1167, lng: 51.9167 }
   },
   {
     id: 12,
-    city: "Новосибирск",
+    city: "Петропавловск",
     company: "GRANIT EXPERT",
-    contact: "+7 (913) 911-40-90",
-    entity: "ООО «Стройкомплект»",
-    address: "г. Новосибирск, ул. Фабричная 39, LOFT Ф39, вход А2"
+    contact: "+7 (7152) 11-40-90",
+    entity: "ТОО «Стройкомплект»",
+    address: "г. Петропавловск, ул. Ленина 39",
+    coordinates: { lat: 54.8734, lng: 69.1561 }
   },
   {
     id: 13,
-    city: "Москва",
+    city: "Туркестан",
     company: "ДЕКОР ИНТЕРЬЕР",
-    contact: "+7 (926) 706-53-47",
-    entity: "ООО «ДЕКОР ИНТЕРЬЕР»",
-    address: "г. Москва, ул. Ленинградское шоссе, 25"
+    contact: "+7 (7253) 06-53-47",
+    entity: "ТОО «ДЕКОР ИНТЕРЬЕР»",
+    address: "г. Туркестан, ул. Ауэзова 25",
+    coordinates: { lat: 43.2867, lng: 68.2621 }
   },
   {
     id: 14,
-    city: "Севастополь",
+    city: "Костанай",
     company: "Profildoors Mall",
-    contact: "+7 (978) 834-92-82",
+    contact: "+7 (7142) 34-92-82",
     entity: "ИП Клепикова Н. П.",
-    address: "г. Севастополь, ул. Токарева 11, фирменный салон Profildoors Mall"
+    address: "г. Костанай, ул. Телмана 11",
+    coordinates: { lat: 53.2056, lng: 63.6222 }
   },
   {
     id: 15,
-    city: "Симферополь",
+    city: "Талдыкорган",
     company: "Дизайн центр",
-    contact: "+7 (978) 086-92-36",
+    contact: "+7 (7282) 86-92-36",
     entity: "ИП Иванова-Корнеева",
-    address: "г. Симферополь, ул. Генерала Васильева 42"
+    address: "г. Талдыкорган, ул. Абая 42",
+    coordinates: { lat: 45.0142, lng: 78.3689 }
   }
 ];
 
-export function DealersContent() {
+const containerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
+const defaultCenter = { lat: 51.1282, lng: 71.4308 }; // Нур-Султан
+
+export default function DealersContent() {
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>(defaultCenter);
+  const [mapZoom, setMapZoom] = useState<number>(5);
+  const [mapHeight, setMapHeight] = useState<number>(500);
+
+  useEffect(() => {
+    const updateMapHeight = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setMapHeight(400);
+      } else if (width < 1024) {
+        setMapHeight(450);
+      } else {
+        setMapHeight(500);
+      }
+    };
+
+    updateMapHeight();
+    window.addEventListener('resize', updateMapHeight);
+    return () => window.removeEventListener('resize', updateMapHeight);
+  }, []);
+
+  const handleCityClick = (dealer: Dealer) => {
+    setSelectedCity(dealer.city);
+    setMapCenter(dealer.coordinates);
+    setMapZoom(12);
+    setSelectedMarker(dealer.id);
+  };
+
+  const uniqueCities = [...new Set(dealers.map(dealer => dealer.city))];
+
+  // Замените на ваш Google Maps API ключ
+  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  
+  // Если нет API ключа, показываем заглушку вместо карты
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          {/* Статистика */}
+          <div className="mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="text-center bg-[#333333]  p-6 text-white">
+                <div className="text-3xl font-bold mb-2">15+</div>
+                <p className="text-gray-300">Городов</p>
+              </div>
+              
+              <div className="text-center bg-gray-50  p-6">
+                <div className="text-3xl font-bold mb-2 text-[#333333]">20+</div>
+                <p className="text-[#989898]">Партнеров</p>
+              </div>
+              
+              <div className="text-center bg-gray-50  p-6">
+                <div className="text-3xl font-bold mb-2 text-[#333333]">100%</div>
+                <p className="text-[#989898]">Гарантия качества</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Карта-заглушка */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+            <div className="bg-gray-50  overflow-hidden shadow-lg">
+              <div 
+                className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative"
+                style={{ height: `${mapHeight}px` }}
+              >
+                {/* Декоративная карта */}
+                <div className="text-center p-8">
+                  <div className="w-24 h-24 bg-[#333333] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="h-12 w-12 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#333333] mb-2">
+                    Наши дилеры по всему Казахстану
+                  </h3>
+                  <p className="text-[#989898] mb-4">
+                    Выберите город из списка ниже для просмотра контактов
+                  </p>
+                </div>
+                
+                {/* Легенда */}
+                <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-gray-200">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md">
+                      <Building className="h-3 w-3 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-800">Официальные дилеры</span>
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">
+                    📍 {uniqueCities.length} городов • {dealers.length} партнеров
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Информация о дилерской программе */}
+            <div className="flex flex-col justify-center">
+              <h2 className="text-3xl font-bold text-[#333333] mb-6">
+                Партнерская сеть по всему Казахстану
+              </h2>
+              <p className="text-[#989898] mb-6 leading-relaxed">
+                Наши официальные дилеры предоставляют полный спектр услуг: от консультации до установки. 
+                Все партнеры прошли обучение и имеют сертификаты качества.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                    <Building className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-[#333333]">Официальные партнеры</h4>
+                    <p className="text-[#989898] text-sm">Сертифицированные дилеры с гарантией</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                    <Phone className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-[#333333]">Прямая связь</h4>
+                    <p className="text-[#989898] text-sm">Контакты для быстрой консультации</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#333333] rounded-lg flex items-center justify-center">
+                    <MapPin className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-[#333333]">Удобное расположение</h4>
+                    <p className="text-[#989898] text-sm">Салоны в центральных районах городов</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Быстрый доступ к городам */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-[#333333] mb-6 text-center">
+              Быстрый переход к городам
+            </h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {uniqueCities.map((city) => {
+                const dealer = dealers.find(d => d.city === city);
+                return (
+                  <button
+                    key={city}
+                    onClick={() => dealer && handleCityClick(dealer)}
+                    className={`group flex items-center gap-2 px-4 py-3 font-medium transition-all duration-300 border shadow-sm hover:shadow-md hover:scale-105 ${
+                      selectedCity === city
+                        ? 'bg-blue-500 text-white border-blue-600'
+                        : 'bg-white text-[#333333] border-gray-200 hover:bg-red-500 hover:text-white'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                      selectedCity === city
+                        ? 'bg-white'
+                        : 'bg-red-500 group-hover:bg-white'
+                    }`}>
+                      <MapPin className={`h-2.5 w-2.5 ${
+                        selectedCity === city
+                          ? 'text-blue-500'
+                          : 'text-white group-hover:text-red-500'
+                      }`} />
+                    </div>
+                    {city}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Список дилеров */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-[#333333] mb-8 text-center">
+              Наши дилеры в Казахстане
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {dealers.map((dealer) => (
+                <div 
+                  key={dealer.id} 
+                  className={`bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${
+                    selectedCity === dealer.city ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                  onClick={() => handleCityClick(dealer)}
+                >
+                  <div className="p-6 flex flex-col justify-between h-full cursor-pointer">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <MapPin className="h-5 w-5 text-[#333333]" />
+                        <h3 className="text-lg font-bold text-[#333333]">
+                          {dealer.city}
+                        </h3>
+                      </div>
+                      
+                      <h4 className="text-md font-semibold text-[#333333] mb-3">
+                        {dealer.company}
+                      </h4>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-start gap-2">
+                          <Phone className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
+                          <a 
+                            href={`tel:${dealer.contact.replace(/\s+/g, '')}`}
+                            className="text-[#989898] hover:text-[#333333] transition-colors text-sm"
+                          >
+                            {dealer.contact}
+                          </a>
+                        </div>
+                        
+                        <div className="flex items-start gap-2">
+                          <User className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
+                          <span className="text-[#989898] text-sm">
+                            {dealer.entity}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto">
+                      <div className="flex items-start gap-2 mb-3">
+                        <MapPin className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
+                        <p className="text-[#989898] text-sm leading-relaxed">
+                          {dealer.address}
+                        </p>
+                      </div>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCityClick(dealer);
+                        }}
+                        className="w-full py-3 px-4 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
+                      >
+                        <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                          <MapPin className="h-3 w-3" />
+                        </div>
+                        Показать на карте
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Призыв к действию */}
+          <div className="text-center bg-[#333333] p-8 text-white">
+            <h3 className="text-2xl font-bold mb-4">
+              Хотите стать нашим дилером?
+            </h3>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              Присоединяйтесь к нашей партнерской программе и получите возможность продавать 
+              качественные стеновые панели с высокой маржинальностью
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="tel:+77713453684"
+                className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold hover:bg-gray-100 transition-colors"
+              >
+                <Phone className="h-5 w-5 mr-2" />
+                Связаться с нами
+              </a>
+              <a
+                href="/contacts"
+                className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold hover:bg-white hover:text-[#333333] transition-colors"
+              >
+                Подробнее
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
-        
         {/* Статистика */}
         <div className="mb-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center bg-[#333333] rounded-lg p-6 text-white">
+            <div className="text-center bg-[#333333]  p-6 text-white">
               <div className="text-3xl font-bold mb-2">15+</div>
               <p className="text-gray-300">Городов</p>
             </div>
             
-            <div className="text-center bg-gray-50 rounded-lg p-6">
+            <div className="text-center bg-gray-50 p-6">
               <div className="text-3xl font-bold mb-2 text-[#333333]">20+</div>
               <p className="text-[#989898]">Партнеров</p>
             </div>
             
-            <div className="text-center bg-gray-50 rounded-lg p-6">
+            <div className="text-center bg-gray-50 p-6">
               <div className="text-3xl font-bold mb-2 text-[#333333]">100%</div>
               <p className="text-[#989898]">Гарантия качества</p>
             </div>
@@ -159,160 +473,69 @@ export function DealersContent() {
           {/* Карта с кнопками городов */}
           <div className="bg-gray-50 rounded-lg overflow-hidden shadow-lg">
             <div className="h-full min-h-[400px] lg:min-h-[500px] relative">
-              <iframe
-                src="https://yandex.ru/map-widget/v1/?ll=66.923684%2C48.019573&z=4"
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="border-0"
-                title="Карта дилеров"
-              ></iframe>
+              <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY}>
+                <GoogleMap
+                  mapContainerStyle={{ ...containerStyle, height: mapHeight }}
+                  center={mapCenter}
+                  zoom={mapZoom}
+                  options={{
+                    styles: [
+                      {
+                        featureType: "poi.business",
+                        stylers: [{ visibility: "off" }]
+                      }
+                    ],
+                    disableDefaultUI: false,
+                    zoomControl: true,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true
+                  }}
+                >
+                  {dealers.map((dealer) => (
+                    <Marker
+                      key={dealer.id}
+                      position={dealer.coordinates}
+                      icon={{
+                        url: selectedCity === dealer.city
+                          ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                          : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                        scaledSize: selectedMarker !== null ? new window.google.maps.Size(32, 32) : undefined
+                      }}
+                      onClick={() => {
+                        setSelectedMarker(dealer.id);
+                        handleCityClick(dealer);
+                      }}
+                    />
+                  ))}
+                  
+                  {selectedMarker !== null && (
+                    <InfoWindow
+                      position={dealers.find(d => d.id === selectedMarker)?.coordinates}
+                      onCloseClick={() => setSelectedMarker(null)}
+                    >
+                      <div className="p-2 max-w-xs">
+                        <h3 className="font-bold text-gray-800 mb-1">{dealers.find(d => d.id === selectedMarker)?.city}</h3>
+                        <p className="font-medium text-gray-700 mb-1">{dealers.find(d => d.id === selectedMarker)?.company}</p>
+                        <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.address}</p>
+                        <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.contact}</p>
+                        <p className="text-gray-600 text-xs">{dealers.find(d => d.id === selectedMarker)?.entity}</p>
+                      </div>
+                    </InfoWindow>
+                  )}
+                </GoogleMap>
+              </LoadScript>
               
-              {/* Красивые маркеры городов на карте */}
-              <div className="absolute inset-0 pointer-events-none">
-                {/* Москва */}
-                <div className="absolute top-[35%] left-[25%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/213/moscow/?text=Ленинградское%20шоссе%2025', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Москва - ДЕКОР ИНТЕРЬЕР"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Москва
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Казань */}
-                <div className="absolute top-[40%] left-[35%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/43/kazan/?text=Сибгата%20Хакима%2040', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Казань - Villa Design"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Казань
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Новосибирск */}
-                <div className="absolute top-[45%] left-[55%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/65/novosibirsk/?text=Фабричная%2039', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Новосибирск - GRANIT EXPERT"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Новосибирск
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Владивосток */}
-                <div className="absolute top-[55%] left-[85%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/75/vladivostok/?text=Народный%20проспект%2028', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Владивосток - Народный проспект"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Владивосток
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Краснодар */}
-                <div className="absolute top-[60%] left-[28%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/35/krasnodar/?text=Шоссе%20Нефтяников%2018', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Краснодар - Онлайн декор"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Краснодар
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Волгоград */}
-                <div className="absolute top-[55%] left-[32%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/38/volgograd/?text=7%20Гвардейской%20Дивизии%2017', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Волгоград - Оранж Дизайн"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Волгоград
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Великий Новгород */}
-                <div className="absolute top-[30%] left-[20%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/24/veliky-novgorod/?text=Московская%2053', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Великий Новгород - ART I SHOCK"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      В. Новгород
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Севастополь */}
-                <div className="absolute top-[65%] left-[22%] pointer-events-auto">
-                  <button 
-                    onClick={() => window.open('https://yandex.ru/maps/959/sevastopol/?text=Токарева%2011', '_blank')}
-                    className="group relative flex flex-col items-center cursor-pointer"
-                    title="Севастополь - Profildoors Mall"
-                  >
-                    <div className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                      <Building className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="mt-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium text-gray-800 shadow-md">
-                      Севастополь
-                    </div>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Красивая легенда */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-gray-200">
+              {/* Легенда */}
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-gray-200 z-10">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md">
                     <Building className="h-3 w-3 text-white" />
                   </div>
                   <span className="text-sm font-medium text-gray-800">Официальные дилеры</span>
                 </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-red-500" />
-                  <span className="text-xs text-gray-600">Кликните для перехода на карту</span>
-                </div>
                 <div className="text-xs text-gray-500 font-medium">
-                  📍 {Array.from(new Set(dealers.map(dealer => dealer.city))).length} городов • {dealers.length} партнеров
+                  📍 {uniqueCities.length} городов • {dealers.length} партнеров
                 </div>
               </div>
             </div>
@@ -321,7 +544,7 @@ export function DealersContent() {
           {/* Информация о дилерской программе */}
           <div className="flex flex-col justify-center">
             <h2 className="text-3xl font-bold text-[#333333] mb-6">
-              Партнерская сеть по всей стране
+              Партнерская сеть по всему Казахстану
             </h2>
             <p className="text-[#989898] mb-6 leading-relaxed">
               Наши официальные дилеры предоставляют полный спектр услуг: от консультации до установки. 
@@ -368,31 +591,28 @@ export function DealersContent() {
             Быстрый переход к городам
           </h3>
           <div className="flex flex-wrap justify-center gap-3">
-            {Array.from(new Set(dealers.map(dealer => dealer.city))).map((city) => {
-              const cityLinks: { [key: string]: string } = {
-                'Москва': 'https://yandex.ru/maps/213/moscow/?text=Ленинградское%20шоссе%2025',
-                'Казань': 'https://yandex.ru/maps/43/kazan/?text=Сибгата%20Хакима%2040',
-                'Новосибирск': 'https://yandex.ru/maps/65/novosibirsk/?text=Фабричная%2039',
-                'Владивосток': 'https://yandex.ru/maps/75/vladivostok/?text=Народный%20проспект%2028',
-                'Краснодар': 'https://yandex.ru/maps/35/krasnodar/?text=Шоссе%20Нефтяников%2018',
-                'Волгоград': 'https://yandex.ru/maps/38/volgograd/?text=7%20Гвардейской%20Дивизии%2017',
-                'Великий Новгород': 'https://yandex.ru/maps/24/veliky-novgorod/?text=Московская%2053',
-                'Севастополь': 'https://yandex.ru/maps/959/sevastopol/?text=Токарева%2011',
-                'Симферополь': 'https://yandex.ru/maps/146/simferopol/?text=Генерала%20Васильева%2042',
-                'Владикавказ': 'https://yandex.ru/maps/33/vladikavkaz/?text=Весенняя%201а',
-                'Киров': 'https://yandex.ru/maps/46/kirov/?text=Солнечная%208В',
-                'Иркутск': 'https://yandex.ru/maps/63/irkutsk/?text=Рабочая%2018д',
-                'Благовещенск': 'https://yandex.ru/maps/77/blagoveshchensk/?text=Воронкова%204'
-              };
-              
+            {uniqueCities.map((city) => {
+              const dealer = dealers.find(d => d.city === city);
               return (
                 <button
                   key={city}
-                  onClick={() => window.open(cityLinks[city] || `https://yandex.ru/maps/?text=${encodeURIComponent(city)}`, '_blank')}
-                  className="group flex items-center gap-2 px-4 py-3 bg-white hover:bg-red-500 hover:text-white text-[#333333] rounded-lg font-medium transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-md hover:scale-105"
+                  onClick={() => dealer && handleCityClick(dealer)}
+                  className={`group flex items-center gap-2 px-4 py-3 font-medium transition-all duration-300 border shadow-sm hover:shadow-md hover:scale-105 ${
+                    selectedCity === city
+                      ? 'bg-blue-500 text-white border-blue-600'
+                      : 'bg-white text-[#333333] border-gray-200 hover:bg-red-500 hover:text-white'
+                  }`}
                 >
-                  <div className="w-4 h-4 bg-red-500 group-hover:bg-white rounded-full flex items-center justify-center">
-                    <MapPin className="h-2.5 w-2.5 text-white group-hover:text-red-500" />
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                    selectedCity === city
+                      ? 'bg-white'
+                      : 'bg-red-500 group-hover:bg-white'
+                  }`}>
+                    <MapPin className={`h-2.5 w-2.5 ${
+                      selectedCity === city
+                        ? 'text-blue-500'
+                        : 'text-white group-hover:text-red-500'
+                    }`} />
                   </div>
                   {city}
                 </button>
@@ -404,13 +624,19 @@ export function DealersContent() {
         {/* Список дилеров */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-[#333333] mb-8 text-center">
-            Наши дилеры
+            Наши дилеры в Казахстане
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {dealers.map((dealer) => (
-              <div key={dealer.id} className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                <div className="aspect-square p-6 flex flex-col justify-between">
+              <div 
+                key={dealer.id} 
+                className={`bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${
+                  selectedCity === dealer.city ? 'ring-2 ring-blue-500' : ''
+                }`}
+                onClick={() => handleCityClick(dealer)}
+              >
+                <div className="p-6 flex flex-col justify-between h-full cursor-pointer">
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <MapPin className="h-5 w-5 text-[#333333]" />
@@ -427,7 +653,7 @@ export function DealersContent() {
                       <div className="flex items-start gap-2">
                         <Phone className="h-4 w-4 text-[#333333] mt-1 shrink-0" />
                         <a 
-                          href={`tel:${dealer.contact}`}
+                          href={`tel:${dealer.contact.replace(/\s+/g, '')}`}
                           className="text-[#989898] hover:text-[#333333] transition-colors text-sm"
                         >
                           {dealer.contact}
@@ -452,27 +678,13 @@ export function DealersContent() {
                     </div>
                     
                     <button
-                      onClick={() => {
-                        const cityLinks: { [key: string]: string } = {
-                          'Москва': 'https://yandex.ru/maps/213/moscow/?text=Ленинградское%20шоссе%2025',
-                          'Казань': 'https://yandex.ru/maps/43/kazan/?text=Сибгата%20Хакима%2040',
-                          'Новосибирск': 'https://yandex.ru/maps/65/novosibirsk/?text=Фабричная%2039',
-                          'Владивосток': 'https://yandex.ru/maps/75/vladivostok/?text=Народный%20проспект%2028',
-                          'Краснодар': 'https://yandex.ru/maps/35/krasnodar/?text=Шоссе%20Нефтяников%2018',
-                          'Волгоград': 'https://yandex.ru/maps/38/volgograd/?text=7%20Гвардейской%20Дивизии%2017',
-                          'Великий Новгород': 'https://yandex.ru/maps/24/veliky-novgorod/?text=Московская%2053',
-                          'Севастополь': 'https://yandex.ru/maps/959/sevastopol/?text=Токарева%2011',
-                          'Симферополь': 'https://yandex.ru/maps/146/simferopol/?text=Генерала%20Васильева%2042',
-                          'Владикавказ': 'https://yandex.ru/maps/33/vladikavkaz/?text=Весенняя%201а',
-                          'Киров': 'https://yandex.ru/maps/46/kirov/?text=Солнечная%208В',
-                          'Иркутск': 'https://yandex.ru/maps/63/irkutsk/?text=Рабочая%2018д',
-                          'Благовещенск': 'https://yandex.ru/maps/77/blagoveshchensk/?text=Воронкова%204'
-                        };
-                        window.open(cityLinks[dealer.city] || `https://yandex.ru/maps/?text=${encodeURIComponent(dealer.address)}`, '_blank');
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCityClick(dealer);
                       }}
-                      className="group w-full py-3 px-4 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
+                      className="w-full py-3 px-4 bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-105"
                     >
-                      <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                      <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
                         <MapPin className="h-3 w-3" />
                       </div>
                       Показать на карте
@@ -485,7 +697,7 @@ export function DealersContent() {
         </div>
 
         {/* Призыв к действию */}
-        <div className="text-center bg-[#333333] rounded-lg p-8 text-white">
+        <div className="text-center bg-[#333333] p-8 text-white">
           <h3 className="text-2xl font-bold mb-4">
             Хотите стать нашим дилером?
           </h3>
@@ -495,18 +707,18 @@ export function DealersContent() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href={formatPhoneForCall(COMPANY_INFO.phoneClean)}
-              className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+              href="tel:+77713453684"
+              className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#333333] font-semibold  hover:bg-gray-100 transition-colors"
             >
               <Phone className="h-5 w-5 mr-2" />
               Связаться с нами
             </a>
-            <Link
+            <a
               href="/contacts"
-              className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-[#333333] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold hover:bg-white hover:text-[#333333] transition-colors"
             >
               Подробнее
-            </Link>
+            </a>
           </div>
         </div>
       </div>
