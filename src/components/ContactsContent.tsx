@@ -189,7 +189,9 @@ export function ContactsContent() {
                       onClick={() => setSelectedMarker(locations[0].id)}
                       icon={{
                         url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: window.google?.maps ? new window.google.maps.Size(32, 32) : undefined
+                        scaledSize: typeof window !== 'undefined' && window.google?.maps 
+                          ? new window.google.maps.Size(32, 32) 
+                          : undefined
                       }}
                     />
                     
