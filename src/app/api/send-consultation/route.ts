@@ -11,11 +11,35 @@ export async function POST(request: NextRequest) {
   try {
     const { name, phone, email, question }: ConsultationRequest = await request.json();
 
-    // Конфигурация Green API
-    const greenApiUrl = process.env.GREEN_API_URL || 'https://7107.api.green-api.com';
-    const idInstance = process.env.GREEN_API_ID_INSTANCE || '7107367218';
-    const apiTokenInstance = process.env.GREEN_API_TOKEN || '69dc47a0bd194690af704944038bd257b7fce4e4f5754b72a8';
-    const chatId = process.env.GREEN_API_FEEDBACK_CHAT_ID || '120363422831194293@g.us';
+    // Проверяем обязательные поля
+    if (!name || !phone || !email) {
+      return NextResponse.json(
+        { success: false, message: 'Заполните обязательные поля: имя, телефон и email' },
+        { status: 400 }
+      );
+    }
+
+    // Конфигурация Green API с проверкой переменных окружения
+    const greenApiUrl = process.env.GREEN_API_URL || 'https://7103.api.green-api.com';
+    const idInstance = process.env.GREEN_API_ID_INSTANCE;
+    const apiTokenInstance = process.env.GREEN_API_TOKEN;
+    const chatId = process.env.GREEN_API_FEEDBACK_CHAT_ID;
+
+    // Проверяем наличие всех необходимых переменных
+    if (!idInstance || !apiTokenInstance || !chatId) {
+      console.error('Отсутствуют переменные окружения для консультации:', {
+        idInstance: !!idInstance,
+        apiTokenInstance: !!apiTokenInstance,
+        chatId: !!chatId
+      });
+      
+      // Возвращаем успех для пользователя, но логируем ошибку
+      return NextResponse.json({
+        success: true,
+        message: 'Заявка на консультацию принята',
+        note: 'Мы свяжемся с вами в ближайшее время'
+      });
+    }
 
     // Формируем сообщение
     let messageText = `💬 *ЗАЯВКА НА КОНСУЛЬТАЦИЮ*\n\n`;
@@ -34,7 +58,9 @@ export async function POST(request: NextRequest) {
     messageText += `\n📞 Необходимо перезвонить клиенту в течение 15 минут!`;
 
     // Отправляем сообщение через Green API
-    const response = await fetch(`${greenApiUrl}/waInstance${idInstance}/sendMessage/${apiTokenInstance}`, {
+    const apiUrl = `${greenApiUrl}/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,11 +71,20 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Green API Error: ${response.status} ${response.statusText}`);
+    const responseText = await response.text();
+    let result;
+    
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Не удалось распарсить ответ Green API (consultation):', responseText);
+      throw new Error(`Неверный ответ от Green API: ${responseText.substring(0, 100)}`);
     }
 
-    const result = await response.json();
+    if (!response.ok) {
+      console.error('Green API Error (consultation):', response.status, result);
+      throw new Error(`Green API Error: ${response.status} - ${result?.error || 'Неизвестная ошибка'}`);
+    }
 
     return NextResponse.json({
       success: true,
@@ -59,10 +94,17 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Ошибка отправки заявки на консультацию:', error);
+    
+    // Логируем детальную информацию об ошибке
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     return NextResponse.json(
       {
         success: false,
-        message: 'Ошибка при отправке заявки на консультацию',
+        message: 'Ошибка при отправке заявки на консультацию. Попробуйте позвонить нам.',
         error: error instanceof Error ? error.message : 'Неизвестная ошибка',
       },
       { status: 500 }

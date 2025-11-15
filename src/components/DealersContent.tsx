@@ -533,7 +533,7 @@ export default function DealersContent() {
                         position={dealers.find(d => d.id === selectedMarker)?.coordinates}
                         onCloseClick={handleInfoWindowClose}
                       >
-                        <div className="p-2 max-w-xs">
+                        <div className="p-2 max-w-xs bg-white">
                           <h3 className="font-bold text-gray-800 mb-1">{dealers.find(d => d.id === selectedMarker)?.city}</h3>
                           <p className="font-medium text-gray-700 mb-1">{dealers.find(d => d.id === selectedMarker)?.company}</p>
                           <p className="text-gray-600 text-sm mb-1">{dealers.find(d => d.id === selectedMarker)?.address}</p>

@@ -41,6 +41,7 @@ export function ContactsContent() {
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Мемоизируем обработчики событий
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,8 +56,19 @@ export function ContactsContent() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus('idle');
+    setErrorMessage('');
     
     try {
+      console.log('🚀 Начинаем отправку заявки...');
+      console.log('📝 Данные формы:', formData);
+      
+      // Проверяем заполненность обязательных полей
+      if (!formData.name.trim() || !formData.phone.trim() || !formData.email.trim()) {
+        throw new Error('Заполните все обязательные поля: имя, телефон и email');
+      }
+      
+      console.log('📡 Отправляем запрос на /api/send-feedback...');
+      
       const response = await fetch('/api/send-feedback', {
         method: 'POST',
         headers: {
@@ -65,19 +77,53 @@ export function ContactsContent() {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      console.log('📊 Статус ответа:', response.status);
+      console.log('📋 Headers ответа:', Object.fromEntries(response.headers));
+      
+      const responseText = await response.text();
+      console.log('📄 Ответ сервера (RAW):', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('✅ Распарсенный результат:', result);
+      } catch (parseError) {
+        console.error('❌ Ошибка парсинга JSON:', parseError);
+        console.error('🔤 Не удалось распарсить:', responseText.substring(0, 500));
+        throw new Error(`Сервер вернул неверный формат данных: ${responseText.substring(0, 100)}...`);
+      }
 
-      if (result.success) {
+      if (response.ok && result.success) {
+        console.log('🎉 Заявка успешно отправлена!');
         setSubmitStatus('success');
         setFormData({ name: "", phone: "+7", email: "", message: "" });
       } else {
-        throw new Error(result.message);
+        // Детальное логирование ошибки
+        console.error('❌ Ошибка от API:');
+        console.error('  - Status:', response.status);
+        console.error('  - Success:', result.success);
+        console.error('  - Message:', result.message);
+        console.error('  - Error:', result.error);
+        console.error('  - Note:', result.note);
+        
+        const errorMsg = result.message || result.error || `HTTP ${response.status}: ${response.statusText}`;
+        setErrorMessage(errorMsg);
+        setSubmitStatus('error');
       }
     } catch (error) {
-      console.error('Ошибка отправки заявки:', error);
+      console.error('💥 Полная ошибка отправки:', error);
+      
+      let errorMsg = 'Произошла неизвестная ошибка при отправке заявки';
+      if (error instanceof Error) {
+        errorMsg = error.message;
+        console.error('📜 Stack trace:', error.stack);
+      }
+      
+      setErrorMessage(errorMsg);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
+      console.log('🏁 Завершение отправки заявки');
     }
   }, [formData]);
 
@@ -309,6 +355,7 @@ export function ContactsContent() {
             {submitStatus === 'error' && (
               <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-center">
                 ❌ Произошла ошибка при отправке. Попробуйте позже или позвоните нам.
+                {errorMessage && <p className="mt-2 text-red-400">{errorMessage}</p>}
               </div>
             )}
             
