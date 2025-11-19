@@ -9,45 +9,8 @@ declare global {
   }
 }
 
-interface FlipbookPageProps {
-  children: React.ReactNode;
-  className?: string;
-  isActive?: boolean;
-  isPrev?: boolean;
-  isNext?: boolean;
-}
-
-const FlipbookPage: React.FC<FlipbookPageProps> = ({ 
-  children, 
-  className = '', 
-  isActive = false, 
-  isPrev = false, 
-  isNext = false 
-}) => {
-  return (
-    <div 
-      className={`absolute inset-0 transition-all duration-500 ease-in-out ${className} ${
-        isActive 
-          ? 'opacity-100 z-20 transform-none' 
-          : isPrev 
-          ? 'opacity-0 z-10 -translate-x-full' 
-          : isNext 
-          ? 'opacity-0 z-10 translate-x-full' 
-          : 'opacity-0 z-0'
-      }`}
-      style={{
-        transformStyle: 'preserve-3d',
-        backfaceVisibility: 'hidden'
-      }}
-    >
-      <div className="page-content h-full w-full flex items-center justify-center bg-white shadow-lg rounded-lg overflow-hidden">
-        {children}
-      </div>
-    </div>
-  );
-};
-
 export default function BookPage() {
+  const bookRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +21,21 @@ export default function BookPage() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [pdfLib, setPdfLib] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
 
-  // Загрузка PDF.js через CDN
+  // Определение мобильного устройства
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Быстрая загрузка только PDF.js
   useEffect(() => {
     const loadPdfJs = () => {
       if (typeof window === 'undefined') return;
@@ -132,18 +108,29 @@ export default function BookPage() {
     }
   }, [pdfLib, loadPDF]);
 
-  // Функции навигации
+  // Функции навигации с анимацией
   const nextPage = () => {
-    if (currentPage < totalPages - 1) {
+    if (isFlipping) return;
+    
+    const maxPage = isMobile ? totalPages - 1 : Math.floor((totalPages - 1) / 2);
+    if (currentPage < maxPage) {
+      setIsFlipping(true);
       setCurrentPage(currentPage + 1);
       playFlipSound();
+      
+      setTimeout(() => setIsFlipping(false), 600);
     }
   };
 
   const prevPage = () => {
+    if (isFlipping) return;
+    
     if (currentPage > 0) {
+      setIsFlipping(true);
       setCurrentPage(currentPage - 1);
       playFlipSound();
+      
+      setTimeout(() => setIsFlipping(false), 600);
     }
   };
 
@@ -153,6 +140,23 @@ export default function BookPage() {
       audioRef.current.play().catch(() => {});
     }
   };
+
+  // Получение текущих страниц для отображения
+  const getCurrentPages = () => {
+    if (isMobile) {
+      return [pdfPages[currentPage]];
+    } else {
+      // На десктопе показываем две страницы
+      const leftPage = currentPage * 2;
+      const rightPage = leftPage + 1;
+      return [
+        pdfPages[leftPage] || null,
+        pdfPages[rightPage] || null
+      ];
+    }
+  };
+
+  const currentPages = getCurrentPages();
 
   // Управление полноэкранным режимом
   const toggleFullscreen = useCallback(() => {
@@ -171,7 +175,7 @@ export default function BookPage() {
     setSoundEnabled(!soundEnabled);
   }, [soundEnabled]);
 
-  // Скрытие/показ контролов на мобильном
+  // Скрытие/показ контролов
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     
@@ -201,7 +205,7 @@ export default function BookPage() {
     };
   }, []);
 
-  // Keyboard navigation
+  // Клавиатурная навигация
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
@@ -215,7 +219,7 @@ export default function BookPage() {
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
     };
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, isFlipping]);
 
   if (isLoading) {
     return (
@@ -229,6 +233,8 @@ export default function BookPage() {
     );
   }
 
+  const displayTotalPages = isMobile ? totalPages : Math.ceil(totalPages / 2);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center relative overflow-hidden">
       {/* Звуковой файл для перелистывания */}
@@ -239,42 +245,113 @@ export default function BookPage() {
       {/* Основной контейнер книги */}
       <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
         <div 
-          className="book-container relative shadow-2xl rounded-lg overflow-hidden"
+          ref={bookRef}
+          className={`book-container relative transition-all duration-600 ease-in-out ${
+            isFlipping ? 'scale-95' : 'scale-100'
+          }`}
           style={{
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            minWidth: '300px',
-            minHeight: '400px',
-            width: '600px',
-            height: '800px',
-            perspective: '1000px'
+            perspective: '1000px',
+            transformStyle: 'preserve-3d'
           }}
         >
-          {/* Все страницы PDF */}
-          {pdfPages.map((pageUrl, index) => (
-            <FlipbookPage 
-              key={index} 
-              className={index === 0 ? 'cover-page' : ''}
-              isActive={index === currentPage}
-              isPrev={index < currentPage}
-              isNext={index > currentPage}
-            >
-              <div className="relative w-full h-full">
-                <img
-                  src={pageUrl}
-                  alt={`Страница ${index + 1}`}
-                  className="max-w-full max-h-full object-contain"
-                  draggable={false}
-                />
-                {/* Показываем "Конец" только на последней странице */}
-                {index === pdfPages.length - 1 && (
-                  <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                    Конец
+          {/* Книга */}
+          <div 
+            className={`book shadow-2xl rounded-lg overflow-hidden bg-white ${
+              isMobile ? 'mobile-book' : 'desktop-book'
+            }`}
+            style={{
+              width: isMobile ? '350px' : '800px',
+              height: isMobile ? '500px' : '600px',
+              transformStyle: 'preserve-3d',
+              transform: isFlipping ? 'rotateY(5deg)' : 'rotateY(0deg)',
+              transition: 'transform 0.6s ease-in-out'
+            }}
+          >
+            {isMobile ? (
+              // Мобильная версия - одна страница
+              <div 
+                className="page-single w-full h-full relative overflow-hidden"
+                style={{
+                  backgroundImage: currentPages[0] ? `url(${currentPages[0]})` : 'none',
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                }}
+              >
+                {currentPages[0] && (
+                  <div className="absolute bottom-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
+                    {currentPage + 1}
                   </div>
                 )}
               </div>
-            </FlipbookPage>
-          ))}
+            ) : (
+              // Десктопная версия - две страницы
+              <div className="flex w-full h-full">
+                {/* Левая страница */}
+                <div 
+                  className="page-left w-1/2 h-full relative border-r border-gray-300"
+                  style={{
+                    backgroundImage: currentPages[0] ? `url(${currentPages[0]})` : 'none',
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    transform: isFlipping ? 'rotateY(-10deg)' : 'rotateY(0deg)',
+                    transition: 'transform 0.6s ease-in-out'
+                  }}
+                >
+                  {currentPages[0] && (
+                    <div className="absolute bottom-4 left-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
+                      {currentPage * 2 + 1}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Правая страница */}
+                <div 
+                  className="page-right w-1/2 h-full relative"
+                  style={{
+                    backgroundImage: currentPages[1] ? `url(${currentPages[1]})` : 'none',
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    transform: isFlipping ? 'rotateY(10deg)' : 'rotateY(0deg)',
+                    transition: 'transform 0.6s ease-in-out'
+                  }}
+                >
+                  {currentPages[1] && (
+                    <div className="absolute bottom-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
+                      {currentPage * 2 + 2}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Боковые кнопки навигации для десктопа */}
+        <div className="hidden md:flex absolute inset-y-0 left-0 right-0 pointer-events-none">
+          {/* Левая кнопка */}
+          <button
+            onClick={prevPage}
+            disabled={currentPage <= 0 || isFlipping}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-16 h-16 rounded-full bg-black/30 hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 pointer-events-auto z-30"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Правая кнопка */}
+          <button
+            onClick={nextPage}
+            disabled={currentPage >= Math.floor((totalPages - 1) / 2) || isFlipping}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-16 h-16 rounded-full bg-black/30 hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 pointer-events-auto z-30"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -288,7 +365,7 @@ export default function BookPage() {
           {/* Предыдущая страница */}
           <button
             onClick={prevPage}
-            disabled={currentPage <= 0}
+            disabled={currentPage <= 0 || isFlipping}
             className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,13 +375,16 @@ export default function BookPage() {
 
           {/* Индикатор страниц */}
           <div className="text-white text-sm font-medium">
-            {currentPage + 1} / {totalPages}
+            {currentPage + 1} / {displayTotalPages}
+            {!isMobile && (
+              <span className="text-xs opacity-70 ml-1">(развороты)</span>
+            )}
           </div>
 
           {/* Следующая страница */}
           <button
             onClick={nextPage}
-            disabled={currentPage >= totalPages - 1}
+            disabled={currentPage >= displayTotalPages - 1 || isFlipping}
             className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,11 +432,13 @@ export default function BookPage() {
       {/* Боковые области для мобильной навигации */}
       <button
         onClick={prevPage}
+        disabled={isFlipping}
         className="fixed left-0 top-0 w-1/4 h-full z-40 opacity-0 md:hidden"
         aria-label="Предыдущая страница"
       />
       <button
         onClick={nextPage}
+        disabled={isFlipping}
         className="fixed right-0 top-0 w-1/4 h-full z-40 opacity-0 md:hidden"
         aria-label="Следующая страница"
       />
