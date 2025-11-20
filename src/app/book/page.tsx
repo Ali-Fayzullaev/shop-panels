@@ -1,453 +1,268 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-
-// Типы для PDF.js
-declare global {
-  interface Window {
-    pdfjsLib: any;
-  }
-}
+import React, { useEffect, useState } from 'react';
+import BookViewer from '@/components/BookViewer';
+import BookControls from '@/components/BookControls';
+import { useBookState } from '@/hooks/useBookState';
+import { PDFLoader } from '@/lib/pdfLoader';
+import { BookSounds } from '@/lib/bookSounds';
 
 export default function BookPage() {
-  const bookRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [pages, setPages] = useState<string[]>([]);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('Инициализация...');
+  const [bookState, bookActions] = useBookState(pages);
+  const [soundsReady, setSoundsReady] = useState(false);
+  const [isBookReady, setIsBookReady] = useState(false);
   
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [pdfPages, setPdfPages] = useState<string[]>([]);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showControls, setShowControls] = useState(true);
-  const [pdfLib, setPdfLib] = useState<any>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isFlipping, setIsFlipping] = useState(false);
-
-  // Определение мобильного устройства
+  // Загрузка PDF и звуков
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Быстрая загрузка только PDF.js
-  useEffect(() => {
-    const loadPdfJs = () => {
-      if (typeof window === 'undefined') return;
-
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      script.onload = () => {
-        if (window.pdfjsLib) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          setPdfLib(window.pdfjsLib);
-        }
-      };
-      script.onerror = () => {
-        console.error('Ошибка загрузки PDF.js');
-      };
-      
-      document.head.appendChild(script);
-    };
-
-    loadPdfJs();
-  }, []);
-
-  // Загрузка и конвертация PDF в изображения
-  const loadPDF = useCallback(async () => {
-    if (!pdfLib) return;
-    
-    try {
-      setIsLoading(true);
-      const loadingTask = pdfLib.getDocument('/FlipbookViewer.pdf');
-      const pdf = await loadingTask.promise;
-      const numPages = pdf.numPages;
-      setTotalPages(numPages);
-
-      const pagePromises = [];
-      for (let i = 1; i <= numPages; i++) {
-        pagePromises.push(
-          pdf.getPage(i).then(async (page: any) => {
-            const scale = 2.0;
-            const viewport = page.getViewport({ scale });
-            
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d')!;
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            
-            const renderContext = {
-              canvasContext: context,
-              viewport: viewport,
-            };
-            
-            await page.render(renderContext).promise;
-            return canvas.toDataURL('image/jpeg', 0.9);
-          })
+    const loadBookContent = async () => {
+      try {
+        setLoadingMessage('Загрузка звуков...');
+        
+        // Загружаем звуки
+        const sounds = BookSounds.getInstance();
+        await sounds.loadBookSounds();
+        setSoundsReady(true);
+        
+        setLoadingMessage('Загрузка PDF...');
+        setLoadingProgress(10);
+        
+        // Загружаем PDF
+        const pdfPages = await PDFLoader.loadPDFWithProgress(
+          '/FlipbookViewer.pdf',
+          (loaded, total) => {
+            const progress = 10 + (loaded / total) * 80; // 10% звуки, 80% PDF
+            setLoadingProgress(progress);
+            setLoadingMessage(`Конвертация страниц: ${loaded}/${total}`);
+          },
+          {
+            scale: 2.5, // Увеличенное качество
+            quality: 0.95
+          }
         );
-      }
-
-      const pages = await Promise.all(pagePromises);
-      setPdfPages(pages);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Ошибка загрузки PDF:', error);
-      setIsLoading(false);
-    }
-  }, [pdfLib]);
-
-  // Загрузка PDF когда библиотека готова
-  useEffect(() => {
-    if (pdfLib) {
-      loadPDF();
-    }
-  }, [pdfLib, loadPDF]);
-
-  // Функции навигации с анимацией
-  const nextPage = () => {
-    if (isFlipping) return;
-    
-    const maxPage = isMobile ? totalPages - 1 : Math.floor((totalPages - 1) / 2);
-    if (currentPage < maxPage) {
-      setIsFlipping(true);
-      setCurrentPage(currentPage + 1);
-      playFlipSound();
-      
-      setTimeout(() => setIsFlipping(false), 600);
-    }
-  };
-
-  const prevPage = () => {
-    if (isFlipping) return;
-    
-    if (currentPage > 0) {
-      setIsFlipping(true);
-      setCurrentPage(currentPage - 1);
-      playFlipSound();
-      
-      setTimeout(() => setIsFlipping(false), 600);
-    }
-  };
-
-  const playFlipSound = () => {
-    if (soundEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-  };
-
-  // Получение текущих страниц для отображения
-  const getCurrentPages = () => {
-    if (isMobile) {
-      return [pdfPages[currentPage]];
-    } else {
-      // На десктопе показываем две страницы
-      const leftPage = currentPage * 2;
-      const rightPage = leftPage + 1;
-      return [
-        pdfPages[leftPage] || null,
-        pdfPages[rightPage] || null
-      ];
-    }
-  };
-
-  const currentPages = getCurrentPages();
-
-  // Управление полноэкранным режимом
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => {
-        setIsFullscreen(false);
-      }).catch(() => {});
-    }
-  }, []);
-
-  const toggleSound = useCallback(() => {
-    setSoundEnabled(!soundEnabled);
-  }, [soundEnabled]);
-
-  // Скрытие/показ контролов
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
-    const resetTimeout = () => {
-      clearTimeout(timeout);
-      setShowControls(true);
-      timeout = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    };
-
-    const handleUserActivity = () => {
-      resetTimeout();
-    };
-
-    document.addEventListener('mousemove', handleUserActivity);
-    document.addEventListener('touchstart', handleUserActivity);
-    document.addEventListener('click', handleUserActivity);
-
-    resetTimeout();
-
-    return () => {
-      clearTimeout(timeout);
-      document.removeEventListener('mousemove', handleUserActivity);
-      document.removeEventListener('touchstart', handleUserActivity);
-      document.removeEventListener('click', handleUserActivity);
-    };
-  }, []);
-
-  // Клавиатурная навигация
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        prevPage();
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        nextPage();
+        
+        setLoadingMessage('Подготовка книги к отображению...');
+        setLoadingProgress(95);
+        
+        console.log('PDF успешно конвертирован в', pdfPages.length, 'страниц');
+        
+        // Задержка для корректного рендеринга
+        console.log('🚀 PDF загружен, устанавливаем страницы:', pdfPages.length);
+        setPages(pdfPages);
+        setLoadingMessage('Книга готова!');
+        setLoadingProgress(100);
+        setIsBookReady(true);
+        
+      } catch (error) {
+        console.error('Ошибка загрузки PDF:', error);
+        setLoadingMessage('Ошибка загрузки PDF, используем демо...');
+        
+        // Fallback: создаем красивые демонстрационные страницы
+        const demoPages = Array.from({ length: 12 }, (_, i) => 
+          `data:image/svg+xml;base64,${btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+              <defs>
+                <linearGradient id="bgGrad${i}" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="titleGrad${i}" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              
+              <rect width="400" height="600" fill="url(#bgGrad${i})"/>
+              
+              <!-- Заголовок -->
+              <text x="200" y="80" text-anchor="middle" font-family="serif" font-size="28" font-weight="bold" fill="url(#titleGrad${i})">
+                Каталог Панелей
+              </text>
+              
+              <!-- Подзаголовок -->
+              <text x="200" y="120" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#64748b">
+                Страница ${i + 1}
+              </text>
+              
+              <!-- Декоративные линии -->
+              <line x1="50" y1="140" x2="350" y2="140" stroke="#cbd5e1" stroke-width="2"/>
+              <line x1="50" y1="145" x2="350" y2="145" stroke="#e2e8f0" stroke-width="1"/>
+              
+              <!-- Имитация контента -->
+              <rect x="50" y="180" width="300" height="3" fill="#e2e8f0" rx="1"/>
+              <rect x="50" y="200" width="250" height="3" fill="#e2e8f0" rx="1"/>
+              <rect x="50" y="220" width="280" height="3" fill="#e2e8f0" rx="1"/>
+              <rect x="50" y="240" width="200" height="3" fill="#e2e8f0" rx="1"/>
+              
+              <!-- Центральная иллюстрация -->
+              <circle cx="200" cy="350" r="60" fill="none" stroke="#6366f1" stroke-width="3" opacity="0.3"/>
+              <circle cx="200" cy="350" r="45" fill="none" stroke="#8b5cf6" stroke-width="2" opacity="0.5"/>
+              <circle cx="200" cy="350" r="30" fill="#6366f1" opacity="0.1"/>
+              
+              <!-- Номер страницы -->
+              <circle cx="200" cy="520" r="25" fill="#6366f1"/>
+              <text x="200" y="528" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="white">
+                ${i + 1}
+              </text>
+              
+              <!-- Нижняя декоративная линия -->
+              <line x1="50" y1="560" x2="350" y2="560" stroke="#cbd5e1" stroke-width="1"/>
+            </svg>
+          `)}`
+        );
+        console.log('🎭 Используем демо страницы:', demoPages.length);
+        setPages(demoPages);
+        setLoadingProgress(100);
+        setIsBookReady(true);
       }
     };
 
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [currentPage, totalPages, isFlipping]);
+    loadBookContent();
+  }, []);
 
-  if (isLoading) {
+  const handlePageChange = (page: number) => {
+    console.log('Текущая страница:', page + 1);
+    
+    // Обновляем состояние книги
+    bookActions.goToPage(page);
+    
+    // Воспроизводим звук перелистывания
+    if (soundsReady && bookState.soundEnabled) {
+      const sounds = BookSounds.getInstance();
+      sounds.playFlip();
+    }
+  };
+
+  const handleBookReady = () => {
+    // Воспроизводим звук открытия книги
+    if (soundsReady && bookState.soundEnabled) {
+      const sounds = BookSounds.getInstance();
+      sounds.playOpen();
+    }
+  };
+
+  // Обновляем настройки звука при изменении
+  useEffect(() => {
+    if (soundsReady) {
+      const sounds = BookSounds.getInstance();
+      sounds.setEnabled(bookState.soundEnabled);
+    }
+  }, [bookState.soundEnabled, soundsReady]);
+
+  if (bookState.isLoading || pages.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white text-xl font-semibold">Загрузка книги...</p>
-          <p className="text-purple-300 text-sm mt-2">Конвертируем PDF страницы</p>
+      <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-purple-500 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-purple-200 opacity-20"></div>
+          </div>
+          
+          <div className="space-y-3">
+            <p className="text-white text-2xl font-semibold">{loadingMessage}</p>
+            
+            {/* Прогресс-бар */}
+            <div className="w-80 mx-auto">
+              <div className="bg-black/30 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="h-full bg-linear-to-r from-purple-500 to-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${loadingProgress}%` }}
+                />
+              </div>
+              <p className="text-purple-300 text-sm mt-2">{Math.round(loadingProgress)}%</p>
+            </div>
+          </div>
+
+          {/* Подсказки во время загрузки */}
+          <div className="mt-8 p-4 bg-black/20 rounded-lg max-w-md mx-auto">
+            <p className="text-purple-200 text-sm mb-2">
+              💡 <strong>Совет:</strong> Используйте клавиши ← → для навигации, M для звука, F для полноэкранного режима
+            </p>
+            {loadingProgress > 10 && (
+              <p className="text-blue-200 text-xs">
+                📄 Конвертируем PDF в высококачественные изображения для плавного перелистывания
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  const displayTotalPages = isMobile ? totalPages : Math.ceil(totalPages / 2);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center relative overflow-hidden">
-      {/* Звуковой файл для перелистывания */}
-      <audio ref={audioRef} preload="auto">
-        <source src="/sounds/flip.mp3" type="audio/mpeg" />
-      </audio>
-
-      {/* Основной контейнер книги */}
-      <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
-        <div 
-          ref={bookRef}
-          className={`book-container relative transition-all duration-600 ease-in-out ${
-            isFlipping ? 'scale-95' : 'scale-100'
-          }`}
-          style={{
-            perspective: '1000px',
-            transformStyle: 'preserve-3d'
-          }}
-        >
-          {/* Книга */}
-          <div 
-            className={`book shadow-2xl rounded-lg overflow-hidden bg-white ${
-              isMobile ? 'mobile-book' : 'desktop-book'
-            }`}
-            style={{
-              width: isMobile ? '350px' : '800px',
-              height: isMobile ? '500px' : '600px',
-              transformStyle: 'preserve-3d',
-              transform: isFlipping ? 'rotateY(5deg)' : 'rotateY(0deg)',
-              transition: 'transform 0.6s ease-in-out'
-            }}
-          >
-            {isMobile ? (
-              // Мобильная версия - одна страница
-              <div 
-                className="page-single w-full h-full relative overflow-hidden"
-                style={{
-                  backgroundImage: currentPages[0] ? `url(${currentPages[0]})` : 'none',
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center',
-                }}
-              >
-                {currentPages[0] && (
-                  <div className="absolute bottom-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
-                    {currentPage + 1}
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Десктопная версия - две страницы
-              <div className="flex w-full h-full">
-                {/* Левая страница */}
-                <div 
-                  className="page-left w-1/2 h-full relative border-r border-gray-300"
-                  style={{
-                    backgroundImage: currentPages[0] ? `url(${currentPages[0]})` : 'none',
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                    transform: isFlipping ? 'rotateY(-10deg)' : 'rotateY(0deg)',
-                    transition: 'transform 0.6s ease-in-out'
-                  }}
-                >
-                  {currentPages[0] && (
-                    <div className="absolute bottom-4 left-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
-                      {currentPage * 2 + 1}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Правая страница */}
-                <div 
-                  className="page-right w-1/2 h-full relative"
-                  style={{
-                    backgroundImage: currentPages[1] ? `url(${currentPages[1]})` : 'none',
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                    transform: isFlipping ? 'rotateY(10deg)' : 'rotateY(0deg)',
-                    transition: 'transform 0.6s ease-in-out'
-                  }}
-                >
-                  {currentPages[1] && (
-                    <div className="absolute bottom-4 right-4 bg-black/20 text-white px-2 py-1 rounded text-xs">
-                      {currentPage * 2 + 2}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Боковые кнопки навигации для десктопа */}
-        <div className="hidden md:flex absolute inset-y-0 left-0 right-0 pointer-events-none">
-          {/* Левая кнопка */}
-          <button
-            onClick={prevPage}
-            disabled={currentPage <= 0 || isFlipping}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-16 h-16 rounded-full bg-black/30 hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 pointer-events-auto z-30"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          {/* Правая кнопка */}
-          <button
-            onClick={nextPage}
-            disabled={currentPage >= Math.floor((totalPages - 1) / 2) || isFlipping}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-16 h-16 rounded-full bg-black/30 hover:bg-black/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 pointer-events-auto z-30"
-          >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Панель управления */}
-      <div 
-        className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
-          showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 md:opacity-100 md:translate-y-0'
-        }`}
-      >
-        <div className="bg-black/40 backdrop-blur-md rounded-full px-6 py-3 flex items-center space-x-4">
-          {/* Предыдущая страница */}
-          <button
-            onClick={prevPage}
-            disabled={currentPage <= 0 || isFlipping}
-            className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          {/* Индикатор страниц */}
-          <div className="text-white text-sm font-medium">
-            {currentPage + 1} / {displayTotalPages}
-            {!isMobile && (
-              <span className="text-xs opacity-70 ml-1">(развороты)</span>
-            )}
-          </div>
-
-          {/* Следующая страница */}
-          <button
-            onClick={nextPage}
-            disabled={currentPage >= displayTotalPages - 1 || isFlipping}
-            className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Звук */}
-          <button
-            onClick={toggleSound}
-            className={`w-12 h-12 rounded-full transition-all duration-200 flex items-center justify-center text-white ${
-              soundEnabled ? 'bg-green-500/30 hover:bg-green-500/40' : 'bg-red-500/30 hover:bg-red-500/40'
-            }`}
-          >
-            {soundEnabled ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-              </svg>
-            )}
-          </button>
-
-          {/* Полноэкранный режим */}
-          <button
-            onClick={toggleFullscreen}
-            className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-200 flex items-center justify-center text-white"
-          >
-            {isFullscreen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Боковые области для мобильной навигации */}
-      <button
-        onClick={prevPage}
-        disabled={isFlipping}
-        className="fixed left-0 top-0 w-1/4 h-full z-40 opacity-0 md:hidden"
-        aria-label="Предыдущая страница"
-      />
-      <button
-        onClick={nextPage}
-        disabled={isFlipping}
-        className="fixed right-0 top-0 w-1/4 h-full z-40 opacity-0 md:hidden"
-        aria-label="Следующая страница"
-      />
-
-      {/* Декоративные элементы фона */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center relative overflow-hidden">
+      {/* Фоновые декоративные элементы */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
+        <div className="absolute top-1/4 right-1/3 w-48 h-48 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-15 animate-pulse delay-700"></div>
       </div>
+
+      {/* Главный контент */}
+      <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+        <BookViewer
+          pages={pages}
+          currentPage={bookState.currentPage}
+          onPageChange={handlePageChange}
+          onOrientationChange={(orientation: 'portrait' | 'landscape') => {
+            console.log('🔄 Ориентация изменена:', orientation);
+          }}
+        />
+      </div>
+
+      {/* Контролы книги */}
+      <BookControls
+        currentPage={bookState.currentPage}
+        totalPages={bookState.totalPages}
+        soundEnabled={bookState.soundEnabled}
+        isFullscreen={bookState.isFullscreen}
+        showControls={bookState.showControls}
+        onPrevPage={bookActions.prevPage}
+        onNextPage={bookActions.nextPage}
+        onToggleSound={bookActions.toggleSound}
+        onToggleFullscreen={bookActions.toggleFullscreen}
+        onGoToPage={bookActions.goToPage}
+        isMobile={bookState.isMobile}
+      />
+
+      {/* Информационная панель */}
+      <div className="fixed top-4 right-4 z-50">
+        <div className="bg-black/20 backdrop-blur-sm rounded-lg p-3 text-white text-xs opacity-50 hover:opacity-100 transition-all duration-300">
+          <div className="font-semibold mb-2 text-purple-200">🎮 Управление:</div>
+          <div className="space-y-1">
+            <div>← → Навигация</div>
+            <div>M - Звук ({bookState.soundEnabled ? '🔊' : '🔇'})</div>
+            <div>F - Полный экран</div>
+            <div>Home/End - Первая/Последняя</div>
+          </div>
+          {soundsReady && (
+            <div className="mt-2 pt-2 border-t border-white/20">
+              <div className="text-green-300">🎵 Звуки готовы</div>
+            </div>
+          )}
+          <div className="mt-2 pt-2 border-t border-white/20">
+            <a 
+              href="/book/diagnostic" 
+              className="text-blue-300 hover:text-blue-200 underline"
+              title="Диагностика проблем"
+            >
+              🔧 Диагностика
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Индикатор звука */}
+      {soundsReady && bookState.soundEnabled && (
+        <div className="fixed top-4 left-4 z-50">
+          <div className="bg-green-500/20 backdrop-blur-sm rounded-full p-2 text-green-400">
+            <span className="text-sm">🎵</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
