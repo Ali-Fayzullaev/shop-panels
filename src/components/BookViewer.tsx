@@ -43,22 +43,49 @@ export default function BookViewer({
           justify-content: center;
         `;
         
+        // Определяем увеличенные размеры для лучшего чтения
+        const isMobile = window.innerWidth < 768;
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        
+        // Полноэкранные размеры для максимального чтения
+        const maxWidth = isMobile 
+          ? Math.min(screenWidth - 20, 380) 
+          : Math.min(screenWidth - 40, screenWidth * 0.9);
+        const maxHeight = isMobile 
+          ? Math.min(screenHeight - 180, 500) 
+          : Math.min(screenHeight - 120, screenHeight * 0.9);
+          
+        // Длинные страницы (соотношение как у книги A4)
+        const aspectRatio = isMobile ? 0.75 : 0.707; // ширина/высота
+        
+        let bookWidth, bookHeight;
+        if (maxWidth * (1 / aspectRatio) <= maxHeight) {
+          // Ограничение по ширине
+          bookWidth = maxWidth;
+          bookHeight = maxWidth * (1 / aspectRatio);
+        } else {
+          // Ограничение по высоте
+          bookHeight = maxHeight;
+          bookWidth = maxHeight * aspectRatio;
+        }
+
         // Создаем страницы
         const pageElements: HTMLElement[] = [];
         for (let i = 0; i < pages.length; i++) {
           const pageDiv = document.createElement('div');
           pageDiv.className = 'page';
           pageDiv.style.cssText = `
-            width: 400px;
-            height: 600px;
-            background: white;
+            width: ${Math.round(bookWidth)}px;
+            height: ${Math.round(bookHeight)}px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-radius: 8px;
+            border: ${isMobile ? '1px solid #e9ecef' : 'none'};
+            box-shadow: ${isMobile ? '0 8px 20px rgba(0,0,0,0.1)' : 'none'};
+            border-radius: ${isMobile ? '6px' : '2px'};
             overflow: hidden;
           `;
           
@@ -105,15 +132,15 @@ export default function BookViewer({
         // Небольшая задержка для рендеринга
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Создаем PageFlip
+        // Создаем PageFlip с увеличенными размерами
         const pageFlip = new PageFlip(bookContainer, {
-          width: 400,
-          height: 600,
+          width: Math.round(bookWidth),
+          height: Math.round(bookHeight),
           showCover: true,
-          maxShadowOpacity: 0.4,
-          flippingTime: 600,
+          maxShadowOpacity: 0.6,
+          flippingTime: 800,
           useMouseEvents: true,
-          swipeDistance: 30,
+          swipeDistance: isMobile ? 30 : 50,
           showPageCorners: true,
           disableFlipByClick: false
         });
@@ -187,7 +214,7 @@ export default function BookViewer({
     return (
       <div style={{
         width: '100%',
-        height: '600px',
+        height: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -208,12 +235,10 @@ export default function BookViewer({
     return (
       <div style={{
         width: '100%',
-        height: '600px',
+        height: '100%',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '12px'
+        justifyContent: 'center'
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>📚</div>
@@ -226,12 +251,12 @@ export default function BookViewer({
   return (
     <div style={{
       width: '100%',
-      height: '600px',
+      height: '100%',
       position: 'relative',
-      backgroundColor: '#f8f9fa',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden'
     }}>
       <div 
         ref={containerRef}
@@ -243,34 +268,7 @@ export default function BookViewer({
           justifyContent: 'center'
         }}
       />
-      
-      {!isReady && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          textAlign: 'center',
-          background: 'rgba(255,255,255,0.95)',
-          padding: '30px',
-          borderRadius: '12px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #e3e3e3',
-            borderTop: '4px solid #3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }} />
-          <p style={{ fontSize: '18px', fontWeight: '600', color: '#374151' }}>
-            ⚙️ Инициализация безопасной книги...
-          </p>
-        </div>
-      )}
-      
+
       <style jsx>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
