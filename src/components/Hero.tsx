@@ -57,33 +57,6 @@ const Hero = () => {
               Бесплатная консультация
             </Button>
           </div>
-          
-          {/* Дополнительная кнопка для книги */}
-          <div className="mt-6 pt-6 border-t border-white/20">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a 
-                href="/book/ultra"
-                className="inline-flex items-center gap-2 bg-linear-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 text-sm px-6 py-3 h-auto rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg animate-pulse"
-              >
-                🔥 ULTRA SAFE (100% Гарантия)
-              </a>
-              <a 
-                href="/book/safe"
-                className="inline-flex items-center gap-2 bg-linear-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 text-sm px-6 py-3 h-auto rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
-              >
-                🛡️ Безопасная книга
-              </a>
-              <a 
-                href="/book/simple"
-                className="inline-flex items-center gap-2 bg-linear-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 text-sm px-6 py-3 h-auto rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
-              >
-                📚 Простая книга
-              </a>
-            </div>
-            <p className="text-xs text-white/60 mt-2">
-              🔥 Ultra Safe - абсолютная защита от конфликтов DOM, 0% ошибок
-            </p>
-          </div>
         </div>
       </div>
     </section>

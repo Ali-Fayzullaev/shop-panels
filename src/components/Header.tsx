@@ -152,6 +152,17 @@ const Header = () => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link
+                href="/book"
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  "text-white hover:text-white hover:bg-white/10 bg-transparent"
+                )}
+              >
+                Каталог-книга
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link
                 href="/cooperation"
                 className={cn(
                   navigationMenuTriggerStyle(),
@@ -395,6 +406,19 @@ const Header = () => {
                       <Eye className="w-4 h-4" />
                     </div>
                     <span>Визуализатор</span>
+                  </Link>
+                  
+                  <Link
+                    href="/book"
+                    className="flex items-center space-x-3 p-3 font-medium hover:bg-white/10 transition-all duration-200 text-white group"
+                    onClick={closeMobileMenu}
+                  >
+                    <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center group-hover:bg-white/20 transition-all duration-200">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <span>Каталог-книга</span>
                   </Link>
                   
                   <Link
