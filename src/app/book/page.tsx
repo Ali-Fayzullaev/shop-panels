@@ -46,7 +46,7 @@ const GalleryView: React.FC<GalleryViewProps> = ({ pages, onPageSelect, onClose,
               `}
             >
               {/* Миниатюра страницы */}
-              <div className="relative aspect-3/4 rounded-lg overflow-hidden bg-white shadow-lg">
+              <div className="relative aspect-10/10 overflow-hidden bg-white shadow-lg">
                 <img
                   src={page}
                   alt={`Страница ${index + 1}`}
@@ -205,9 +205,9 @@ export default function BookPage() {
           </svg>
         `)}`;
         
-        // Сразу показываем первую страницу
+        // Сразу показываем первую страницу, но НЕ убираем экран загрузки
         setPages([firstDemoPage]);
-        setLoading(false); // Убираем экран загрузки
+        // НЕ убираем экран загрузки! setLoading(false); 
         setProgress(5); // Показываем небольшой прогресс
         
         console.log('🚀 Быстрый старт - показываем первую страницу');
@@ -231,14 +231,16 @@ export default function BookPage() {
             pdfPages = await PDFLoader.loadPDFWithProgressiveLoading(
               source,
               (loaded, total) => {
-                const progress = 5 + (loaded / total) * 90;
+                // Правильно ограничиваем прогресс от 5% до 95%
+                const ratio = Math.min(loaded / total, 1); // Не больше 1
+                const progress = Math.min(5 + ratio * 90, 95); // Не больше 95%
                 setProgress(progress);
               },
               (firstPages) => {
                 // Как только первые страницы готовы, сразу показываем их
                 console.log(`⚡ Первые ${firstPages.length} страниц готовы!`);
                 setPages(firstPages);
-                setProgress(35); // Показываем, что первые страницы загружены
+                setProgress(Math.min(35, 95)); // Показываем, что первые страницы загружены, но не больше 95%
               },
               { scale: 2.5 }
             );
@@ -247,12 +249,17 @@ export default function BookPage() {
               console.log(`✅ Полная прогрессивная загрузка завершена из: ${source}`);
               setPages(pdfPages); // Обновляем на полный набор страниц
               setProgress(100);
-              setShowCompletedNotification(true);
               
-              // Автоматически скрываем уведомление через 3 секунды
+              // ТОЛЬКО ТЕПЕРЬ убираем экран загрузки
               setTimeout(() => {
-                setShowCompletedNotification(false);
-              }, 3000);
+                setLoading(false);
+                setShowCompletedNotification(true);
+                
+                // Автоматически скрываем уведомление через 3 секунды
+                setTimeout(() => {
+                  setShowCompletedNotification(false);
+                }, 3000);
+              }, 500); // Небольшая задержка чтобы пользователь увидел 100%
               
               return;
             }
@@ -328,13 +335,21 @@ export default function BookPage() {
           setTimeout(() => {
             setPages(demoPages);
             setProgress(100);
+            
+            // ТОЛЬКО ТЕПЕРЬ убираем экран загрузки для демо-контента
+            setTimeout(() => {
+              setLoading(false);
+            }, 500);
           }, 500);
         }
         
       } catch (e) {
         console.error('🚨 Критическая ошибка загрузки:', e);
-        setLoading(false);
         setProgress(100);
+        // Показываем пользователю, что загрузка завершена даже при ошибке
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
       }
     };
     
@@ -410,9 +425,47 @@ export default function BookPage() {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-neutral-900 text-white">
-        <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4"/>
-        <p className="text-sm font-medium text-white/60">Подготовка книги... {Math.round(progress)}%</p>
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[linear-gradient(to_bottom_right,rgb(23,23,23),rgb(38,38,38),rgb(0,0,0))] text-white relative overflow-hidden px-4">
+        {/* Анимированный фон для мобильных и десктоп */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 sm:w-64 sm:h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-96 sm:h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+        
+        {/* Центральный контент */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+          
+          {/* Логотип */}
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[linear-gradient(to_right,rgb(59,130,246),rgb(147,51,234))] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-2xl mb-6 sm:mb-8">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+            </svg>
+          </div>
+          
+          {/* Заголовок */}
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-[linear-gradient(to_right,rgb(255,255,255),rgb(191,219,254))] bg-clip-text text-transparent mb-6 sm:mb-8">
+            Пожалуйста, подождите
+          </h1>
+          
+          {/* Анимированный индикатор загрузки */}
+          <div className="relative mb-6 sm:mb-8">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 border-3 sm:border-4 border-white/20 border-t-blue-500 rounded-full animate-spin"/>
+            <div className="absolute inset-0 w-16 h-16 sm:w-20 sm:h-20 border-3 sm:border-4 border-transparent border-r-purple-500 rounded-full animate-spin animate-reverse"/>
+          </div>
+          
+          {/* Прогресс */}
+          <div className="w-full">
+            <div className="text-3xl sm:text-4xl font-bold text-blue-400 mb-3 sm:mb-4">
+              {Math.round(Math.min(progress, 100))}%
+            </div>
+            <div className="w-full max-w-xs h-2 bg-white/20 rounded-full overflow-hidden mx-auto">
+              <div 
+                className="h-full bg-[linear-gradient(to_right,rgb(59,130,246),rgb(168,85,247))] rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${Math.min(progress, 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

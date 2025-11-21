@@ -187,7 +187,9 @@ export class PDFLoader {
           await page.render({ canvasContext: context, viewport }).promise;
           pages.push(canvas.toDataURL('image/jpeg', quality));
           
-          onProgress?.(10 + (i / numPages) * 30, numPages); // 10-40% на первые страницы
+          // Прогресс для первых страниц: 10-40%
+          const progressPercent = Math.min(10 + (i / numPages) * 90, 95);
+          onProgress?.(progressPercent, numPages);
         } catch (error) {
           console.warn(`⚠️ Ошибка загрузки приоритетной страницы ${i}:`, error);
           pages.push(this.createErrorPage(i, error));
@@ -211,7 +213,11 @@ export class PDFLoader {
           await page.render({ canvasContext: context, viewport }).promise;
           pages.push(canvas.toDataURL('image/jpeg', quality));
           
-          onProgress?.(40 + ((i - priorityPages) / (numPages - priorityPages)) * 60, numPages);
+          // Прогресс для остальных страниц: 40-95%
+          const baseProgress = 40;
+          const remainingProgress = ((i - priorityPages) / (numPages - priorityPages)) * 55;
+          const progressPercent = Math.min(baseProgress + remainingProgress, 95);
+          onProgress?.(progressPercent, numPages);
         } catch (error) {
           console.warn(`⚠️ Ошибка загрузки страницы ${i}:`, error);
           pages.push(this.createErrorPage(i, error));
