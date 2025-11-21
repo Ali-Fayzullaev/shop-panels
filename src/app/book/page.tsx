@@ -237,10 +237,15 @@ export default function BookPage() {
                 setProgress(progress);
               },
               (firstPages) => {
-                // Как только первые страницы готовы, сразу показываем их
-                console.log(`⚡ Первые ${firstPages.length} страниц готовы!`);
+                // Как только первые 10 страниц готовы, сразу показываем их и убираем экран загрузки
+                console.log(`⚡ Первые ${firstPages.length} страниц готовы! Убираем экран загрузки.`);
                 setPages(firstPages);
-                setProgress(Math.min(35, 95)); // Показываем, что первые страницы загружены, но не больше 95%
+                setProgress(50); // Показываем 50% так как основная часть готова
+                
+                // УБИРАЕМ экран загрузки - пользователь может уже пользоваться книгой!
+                setTimeout(() => {
+                  setLoading(false);
+                }, 300); // Небольшая задержка для плавности
               },
               { scale: 2.5 }
             );
@@ -250,16 +255,13 @@ export default function BookPage() {
               setPages(pdfPages); // Обновляем на полный набор страниц
               setProgress(100);
               
-              // ТОЛЬКО ТЕПЕРЬ убираем экран загрузки
+              // Показываем уведомление о завершении загрузки (экран загрузки уже убран)
+              setShowCompletedNotification(true);
+              
+              // Автоматически скрываем уведомление через 3 секунды
               setTimeout(() => {
-                setLoading(false);
-                setShowCompletedNotification(true);
-                
-                // Автоматически скрываем уведомление через 3 секунды
-                setTimeout(() => {
-                  setShowCompletedNotification(false);
-                }, 3000);
-              }, 500); // Небольшая задержка чтобы пользователь увидел 100%
+                setShowCompletedNotification(false);
+              }, 3000);
               
               return;
             }
@@ -331,15 +333,18 @@ export default function BookPage() {
             `)}`
           });
           
-          // Плавно заменяем первую страницу на полный демо-контент
+          // Быстро показываем первые 10 страниц демо-контента
+          const firstDemoPages = demoPages.slice(0, 10);
           setTimeout(() => {
-            setPages(demoPages);
-            setProgress(100);
+            setPages(firstDemoPages);
+            setProgress(50);
+            setLoading(false); // Убираем экран загрузки после первых 10 страниц
             
-            // ТОЛЬКО ТЕПЕРЬ убираем экран загрузки для демо-контента
+            // Затем подгружаем остальные страницы в фоне
             setTimeout(() => {
-              setLoading(false);
-            }, 500);
+              setPages(demoPages);
+              setProgress(100);
+            }, 1000);
           }, 500);
         }
         
@@ -475,12 +480,12 @@ export default function BookPage() {
         {/* Текстурированный фон (Деревянный стол или темный градиент) */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neutral-800 via-neutral-900 to-black" />
         
-        {/* Индикатор фоновой загрузки */}
-        {progress < 100 && progress > 5 && (
-          <div className="absolute top-5 right-5 bg-black/80 text-white px-5 py-3 rounded-full text-sm font-medium flex items-center gap-3 backdrop-blur-md border border-white/10 z-50 transition-all duration-300">
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        {/* Индикатор фоновой загрузки (менее навязчивый) */}
+        {progress < 100 && progress >= 50 && (
+          <div className="absolute top-5 right-5 bg-black/60 text-white/80 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 backdrop-blur-sm border border-white/5 z-40 transition-all duration-500">
+            <div className="w-3 h-3 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
             <span>
-              {progress < 35 ? 'Загрузка PDF...' : 'Загрузка страниц...'} {Math.round(progress)}%
+              Загрузка остальных страниц... {Math.round(Math.min(progress, 100))}%
             </span>
           </div>
         )}

@@ -170,8 +170,8 @@ export class PDFLoader {
       const numPages = pdf.numPages;
       const pages: string[] = [];
       
-      // Сначала загружаем первые 3 страницы для быстрого показа
-      const priorityPages = Math.min(3, numPages);
+      // Сначала загружаем первые 10 страниц для быстрого показа
+      const priorityPages = Math.min(10, numPages);
       console.log(`⚡ Приоритетная загрузка первых ${priorityPages} страниц`);
       
       for (let i = 1; i <= priorityPages; i++) {
