@@ -46,7 +46,7 @@ const GalleryView: React.FC<GalleryViewProps> = ({ pages, onPageSelect, onClose,
               `}
             >
               {/* Миниатюра страницы */}
-              <div className="relative aspect-10/10 overflow-hidden bg-white shadow-lg">
+              <div className="relative aspect-3/4 overflow-hidden bg-white shadow-lg">
                 <img
                   src={page}
                   alt={`Страница ${index + 1}`}

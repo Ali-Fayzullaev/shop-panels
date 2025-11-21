@@ -7,10 +7,10 @@ import productsData from "@/data/products.json";
 import { formatPrice, type Product, type Category } from "@/data/types";
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     category: string;
     product: string;
-  };
+  }>;
 }
 
 function getProduct(categoryId: string, productId: string): { product: Product; category: Category } | null {
@@ -38,8 +38,9 @@ export function generateStaticParams() {
   return params;
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const result = getProduct(params.category, params.product);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const resolvedParams = await params;
+  const result = getProduct(resolvedParams.category, resolvedParams.product);
   
   if (!result) {
     notFound();

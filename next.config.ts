@@ -7,8 +7,19 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: ['marmarill.kz', 'placehold.co', 'cdnjs.cloudflare.com'],
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'marmarill.kz',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdnjs.cloudflare.com',
+      },
       {
         protocol: 'https',
         hostname: '**',
@@ -101,10 +112,10 @@ const nextConfig: NextConfig = {
     // Количество страниц для хранения одновременно
     pagesBufferLength: 5,
   },
-  // Настройки Turbopack для стабильности
-  turbopack: {
+  // Отключаем Turbopack в продакшне для стабильности
+  turbopack: process.env.NODE_ENV === 'development' ? {
     root: process.cwd(),
-  },
+  } : {},
   // Экспериментальные функции для производительности
   experimental: {
     optimizePackageImports: ['lucide-react'],

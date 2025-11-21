@@ -6,7 +6,9 @@
     "dev": "next dev",
     "dev:safe": "cross-env TURBOPACK=0 next dev",
     "build": "next build",
+    "build:production": "NODE_ENV=production next build",
     "start": "next start",
+    "start:production": "NODE_ENV=production next start",
     "lint": "eslint"
   },
   "dependencies": {
