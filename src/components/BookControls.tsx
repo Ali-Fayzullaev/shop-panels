@@ -18,6 +18,8 @@ interface BookControlsProps {
   onNextPage: () => void;
   onToggleSound: () => void;
   onToggleFullscreen: () => void;
+  onToggleGallery?: () => void;
+  galleryAvailable?: boolean;
   className?: string;
   isMobile?: boolean;
 }
@@ -32,6 +34,8 @@ const BookControls: React.FC<BookControlsProps> = ({
   onNextPage,
   onToggleSound,
   onToggleFullscreen,
+  onToggleGallery,
+  galleryAvailable = false,
   className,
   isMobile = false,
 }) => {
@@ -44,31 +48,45 @@ const BookControls: React.FC<BookControlsProps> = ({
       {!isMobile && (
         <>
           <button
-            onClick={onPrevPage}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPrevPage();
+            }}
+            onMouseDown={(e) => e.preventDefault()}
             disabled={!canGoPrev}
             className={cn(
               "fixed left-8 top-1/2 -translate-y-1/2 z-50",
               "w-14 h-14 rounded-full flex items-center justify-center",
               "bg-black/20 hover:bg-black/40 text-white border border-white/10 backdrop-blur-sm",
-              "transition-all duration-300 transform hover:scale-110 active:scale-95",
+              "transition-all duration-200 transform hover:scale-110 active:scale-95",
               "disabled:opacity-0 disabled:pointer-events-none",
+              "select-none cursor-pointer",
               showControls ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
             )}
+            title="Предыдущая страница"
           >
             <ChevronLeft className="w-8 h-8" />
           </button>
 
           <button
-            onClick={onNextPage}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onNextPage();
+            }}
+            onMouseDown={(e) => e.preventDefault()}
             disabled={!canGoNext}
             className={cn(
               "fixed right-8 top-1/2 -translate-y-1/2 z-50",
               "w-14 h-14 rounded-full flex items-center justify-center",
               "bg-black/20 hover:bg-black/40 text-white border border-white/10 backdrop-blur-sm",
-              "transition-all duration-300 transform hover:scale-110 active:scale-95",
+              "transition-all duration-200 transform hover:scale-110 active:scale-95",
               "disabled:opacity-0 disabled:pointer-events-none",
+              "select-none cursor-pointer",
               showControls ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
             )}
+            title="Следующая страница"
           >
             <ChevronRight className="w-8 h-8" />
           </button>
@@ -90,22 +108,46 @@ const BookControls: React.FC<BookControlsProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={onPrevPage}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPrevPage();
+              }}
               disabled={!canGoPrev}
-              className="text-white hover:bg-white/20 rounded-full w-10 h-10 shrink-0"
+              className="text-white hover:bg-white/20 rounded-full w-10 h-10 shrink-0 select-none transition-all duration-150"
+              title="Предыдущая страница"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
+            
+            {/* Кнопка галереи для мобильных */}
+            {isMobile && onToggleGallery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleGallery}
+                disabled={!galleryAvailable}
+                className={cn(
+                  "rounded-full w-8 h-8 transition-colors shrink-0",
+                  galleryAvailable 
+                    ? "text-purple-400 hover:bg-purple-500/20" 
+                    : "text-white/30 cursor-not-allowed"
+                )}
+                title={galleryAvailable ? "Галерея страниц" : "Загрузка..."}
+              >
+                <Layers className="w-4 h-4" />
+              </Button>
+            )}
 
             {/* Инфо о страницах */}
-            <div className="flex flex-col items-center px-2 min-w-[80px]">
+            <div className="flex flex-col items-center px-2 min-w-80px">
               <span className="text-white text-sm font-semibold tracking-wider">
                 {currentPage + 1} <span className="text-white/50">/</span> {totalPages}
               </span>
               {/* Мини прогресс-бар */}
               <div className="w-full h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300"
+                  className="h-full  from-blue-400 to-purple-400 transition-all duration-300"
                   style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
                 />
               </div>
@@ -115,17 +157,41 @@ const BookControls: React.FC<BookControlsProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={onNextPage}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onNextPage();
+              }}
               disabled={!canGoNext}
-              className="text-white hover:bg-white/20 rounded-full w-10 h-10 shrink-0"
+              className="text-white hover:bg-white/20 rounded-full w-10 h-10 shrink-0 select-none transition-all duration-150"
+              title="Следующая страница"
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
 
             <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
 
-            {/* Доп. настройки (Звук / Экран) */}
+            {/* Доп. настройки (Галерея / Звук / Экран) */}
             <div className="flex items-center gap-1">
+              {/* Кнопка галереи */}
+              {onToggleGallery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleGallery}
+                  disabled={!galleryAvailable}
+                  className={cn(
+                    "rounded-full w-10 h-10 transition-colors",
+                    galleryAvailable 
+                      ? "text-purple-400 hover:bg-purple-500/20" 
+                      : "text-white/30 cursor-not-allowed"
+                  )}
+                  title={galleryAvailable ? "Открыть галерею страниц" : "Галерея будет доступна после загрузки"}
+                >
+                  <Layers className="w-5 h-5" />
+                </Button>
+              )}
+              
               <Button
                 variant="ghost"
                 size="icon"

@@ -31,21 +31,43 @@ export class PDFLoader {
         return;
       }
 
+      console.log('📚 Загрузка PDF.js библиотеки...');
+      
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.crossOrigin = 'anonymous';
+      
       script.onload = () => {
         if (window.pdfjsLib) {
           window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
             'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          
+          // Отключаем автоматические события для исправления passive events
+          if (window.pdfjsLib.DisableAutoFetchDefault) {
+            window.pdfjsLib.DisableAutoFetchDefault = true;
+          }
+          
           this.isLoaded = true;
+          console.log('✅ PDF.js успешно загружен');
           resolve();
         } else {
+          console.error('❌ PDF.js не удалось инициализировать');
           reject(new Error('PDF.js не удалось загрузить'));
         }
       };
-      script.onerror = () => {
+      
+      script.onerror = (error) => {
+        console.error('❌ Ошибка загрузки PDF.js:', error);
         reject(new Error('Ошибка загрузки PDF.js'));
       };
+      
+      // Добавляем таймаут на загрузку библиотеки
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Timeout loading PDF.js'));
+      }, 10000);
+      
+      script.addEventListener('load', () => clearTimeout(timeoutId));
+      script.addEventListener('error', () => clearTimeout(timeoutId));
       
       document.head.appendChild(script);
     });
@@ -101,6 +123,124 @@ export class PDFLoader {
     }
   }
 
+  static async loadPDFWithProgressiveLoading(
+    url: string,
+    onProgress?: (loaded: number, total: number) => void,
+    onFirstPagesReady?: (firstPages: string[]) => void,
+    options: PDFLoaderOptions = {}
+  ): Promise<string[]> {
+    await this.loadPDFJS();
+    
+    const { scale = 2.0, quality = 0.92 } = options;
+    
+    try {
+      console.log(`🔄 Начинаем прогрессивную загрузку PDF: ${url}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
+      
+      let pdf;
+      try {
+        const loadingTask = window.pdfjsLib.getDocument({
+          url,
+          onProgress: (progress: { loaded: number; total: number }) => {
+            onProgress?.(progress.loaded * 0.1, progress.total); // 10% на загрузку PDF
+          },
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/',
+          httpHeaders: {
+            'Accept': 'application/pdf,*/*',
+            'Cache-Control': 'no-cache',
+          },
+          withCredentials: false,
+          timeout: 20000,
+          disableAutoFetch: true,
+          disableStream: true,
+          disableRange: true
+        });
+        
+        pdf = await loadingTask.promise;
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        throw fetchError;
+      }
+      
+      const numPages = pdf.numPages;
+      const pages: string[] = [];
+      
+      // Сначала загружаем первые 3 страницы для быстрого показа
+      const priorityPages = Math.min(3, numPages);
+      console.log(`⚡ Приоритетная загрузка первых ${priorityPages} страниц`);
+      
+      for (let i = 1; i <= priorityPages; i++) {
+        try {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale });
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          await page.render({ canvasContext: context, viewport }).promise;
+          pages.push(canvas.toDataURL('image/jpeg', quality));
+          
+          onProgress?.(10 + (i / numPages) * 30, numPages); // 10-40% на первые страницы
+        } catch (error) {
+          console.warn(`⚠️ Ошибка загрузки приоритетной страницы ${i}:`, error);
+          pages.push(this.createErrorPage(i, error));
+        }
+      }
+      
+      // Уведомляем, что первые страницы готовы
+      onFirstPagesReady?.(pages.slice());
+      
+      // Загружаем остальные страницы в фоне
+      for (let i = priorityPages + 1; i <= numPages; i++) {
+        try {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale });
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          await page.render({ canvasContext: context, viewport }).promise;
+          pages.push(canvas.toDataURL('image/jpeg', quality));
+          
+          onProgress?.(40 + ((i - priorityPages) / (numPages - priorityPages)) * 60, numPages);
+        } catch (error) {
+          console.warn(`⚠️ Ошибка загрузки страницы ${i}:`, error);
+          pages.push(this.createErrorPage(i, error));
+        }
+      }
+      
+      console.log(`✅ Прогрессивная загрузка завершена: ${pages.length} страниц`);
+      return pages;
+      
+    } catch (error) {
+      console.error('❌ Ошибка прогрессивной загрузки PDF:', error);
+      throw error;
+    }
+  }
+
+  static createErrorPage(pageNumber: number, error: any): string {
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+      <svg width="600" height="850" xmlns="http://www.w3.org/2000/svg">
+        <rect width="600" height="850" fill="#fee2e2"/>
+        <text x="300" y="400" text-anchor="middle" font-size="24" fill="#dc2626">
+          Ошибка загрузки страницы ${pageNumber}
+        </text>
+        <text x="300" y="450" text-anchor="middle" font-size="16" fill="#7f1d1d">
+          ${error instanceof Error ? error.message : 'Неизвестная ошибка'}
+        </text>
+      </svg>
+    `)}`;
+  }
+
   static async loadPDFWithProgress(
     url: string,
     onProgress?: (loaded: number, total: number) => void,
@@ -111,45 +251,131 @@ export class PDFLoader {
     const { scale = 2.0, quality = 0.92 } = options;
     
     try {
-      const loadingTask = window.pdfjsLib.getDocument({
-        url,
-        onProgress: (progress: { loaded: number; total: number }) => {
-          onProgress?.(progress.loaded, progress.total);
-        },
-      });
+      // Проверяем доступность URL с таймаутом
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
       
-      const pdf = await loadingTask.promise;
+      let pdf;
+      try {
+        const loadingTask = window.pdfjsLib.getDocument({
+          url,
+          onProgress: (progress: { loaded: number; total: number }) => {
+            onProgress?.(progress.loaded, progress.total);
+          },
+          // Добавляем опции для лучшей совместимости
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/',
+          // Настройки для работы с проблемными серверами (504 fix)
+          httpHeaders: {
+            'Accept': 'application/pdf,*/*',
+            'Cache-Control': 'no-cache',
+          },
+          withCredentials: false,
+          // Увеличиваем таймаут
+          timeout: 20000,
+          // Отключаем автоматические запросы для избежания passive events
+          disableAutoFetch: true,
+          disableStream: true,
+          disableRange: true
+        });
+        
+        pdf = await Promise.race([
+          loadingTask.promise,
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('PDF loading timeout')), 15000);
+          })
+        ]);
+        
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        let errorMessage = 'Неизвестная ошибка загрузки PDF';
+        if (fetchError instanceof Error) {
+          if (fetchError.message.includes('504') || fetchError.message.includes('Gateway Time-out')) {
+            errorMessage = 'Сервер временно недоступен (504). Попробуйте позже или выберите другой источник.';
+          } else if (fetchError.message.includes('timeout') || fetchError.message.includes('AbortError')) {
+            errorMessage = 'Превышен таймаут загрузки. Проверьте интернет-соединение.';
+          } else if (fetchError.message.includes('CORS')) {
+            errorMessage = 'Ограничения безопасности браузера (CORS). Файл должен быть размещен на том же домене.';
+          } else if (fetchError.message.includes('404')) {
+            errorMessage = 'PDF файл не найден по указанному адресу.';
+          } else if (fetchError.message.includes('403')) {
+            errorMessage = 'Доступ к PDF файлу запрещен.';
+          } else {
+            errorMessage = fetchError.message;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+      
       const numPages = pdf.numPages;
+      console.log(`📖 Загружается PDF с ${numPages} страницами`);
       
       const pages: string[] = [];
       
       for (let i = 1; i <= numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale });
-        
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d')!;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-        
-        await page.render(renderContext).promise;
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        pages.push(dataUrl);
-        
-        // Уведомляем о прогрессе конвертации
-        onProgress?.(i, numPages);
+        try {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale });
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d')!;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport,
+          };
+          
+          await page.render(renderContext).promise;
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          pages.push(dataUrl);
+          
+          // Уведомляем о прогрессе конвертации
+          onProgress?.(i, numPages);
+          
+        } catch (pageError) {
+          console.warn(`⚠️ Ошибка обработки страницы ${i}:`, pageError);
+          // Создаем заглушку для проблемной страницы
+          const errorPage = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+            <svg width="600" height="850" xmlns="http://www.w3.org/2000/svg">
+              <rect width="600" height="850" fill="#fee2e2"/>
+              <text x="300" y="400" text-anchor="middle" font-size="24" fill="#dc2626">
+                Ошибка загрузки страницы ${i}
+              </text>
+              <text x="300" y="450" text-anchor="middle" font-size="16" fill="#7f1d1d">
+                ${pageError instanceof Error ? pageError.message : 'Неизвестная ошибка'}
+              </text>
+            </svg>
+          `)}`;
+          pages.push(errorPage);
+        }
       }
 
+      console.log(`✅ Успешно обработано ${pages.length} страниц`);
       return pages;
       
     } catch (error) {
-      console.error('Ошибка загрузки PDF с прогрессом:', error);
-      throw error;
+      console.error('❌ Критическая ошибка загрузки PDF:', error);
+      
+      // Определяем тип ошибки для более точного сообщения
+      let errorMessage = 'Неизвестная ошибка';
+      if (error instanceof Error) {
+        if (error.message.includes('504') || error.message.includes('Gateway Time-out')) {
+          errorMessage = 'Сервер временно недоступен (504). Попробуйте позже.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Превышен таймаут загрузки. Проверьте интернет-соединение.';
+        } else if (error.message.includes('CORS')) {
+          errorMessage = 'Ограничения безопасности браузера (CORS).';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 }

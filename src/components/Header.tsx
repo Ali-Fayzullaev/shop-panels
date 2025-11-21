@@ -267,7 +267,7 @@ const Header = () => {
               </SheetTrigger>
               <SheetContent 
                 side="right" 
-                className="w-[320px] sm:w-[400px] bg-gradient-to-b from-[#333333] to-[#2a2a2a] border-l border-white/10"
+                className="w-[320px] sm:w-[400px] bg-[#333333] border-l border-white/10"
               >
                 <SheetHeader className="relative pb-6">
                   <Button
