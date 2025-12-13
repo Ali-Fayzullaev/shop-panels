@@ -27,9 +27,9 @@ export default function BookViewer({
       const height = window.innerHeight;
       const isMobile = width < 768;
 
-      // Отступы (меньше на мобилке, больше на десктопе)
-      const paddingX = isMobile ? 20 : 100;
-      const paddingY = isMobile ? 100 : 140; // Оставляем место снизу для контролов
+      // Увеличиваем отступы, чтобы книга точно помещалась
+      const paddingX = isMobile ? 40 : 120; // Боковые отступы
+      const paddingY = isMobile ? 140 : 180; // Верх и низ (больше места для контролов)
 
       const availableWidth = width - paddingX;
       const availableHeight = height - paddingY;
@@ -41,25 +41,34 @@ export default function BookViewer({
       let bookWidth, bookHeight;
 
       if (isMobile) {
-        // Мобилка: Одна страница
+        // Мобилка: Одна страница - ограничиваем размер
         if (availableWidth / availableHeight > pageAspectRatio) {
-          bookHeight = availableHeight;
+          bookHeight = Math.min(availableHeight, 600); // Максимум 600px высота
           bookWidth = bookHeight * pageAspectRatio;
         } else {
-          bookWidth = availableWidth;
+          bookWidth = Math.min(availableWidth, 400); // Максимум 400px ширина
           bookHeight = bookWidth / pageAspectRatio;
         }
       } else {
-        // Десктоп: Разворот (Две страницы)
+        // Десктоп: Разворот (Две страницы) - увеличиваем размер
         const spreadAspectRatio = pageAspectRatio * 2; 
         
         if (availableWidth / availableHeight > spreadAspectRatio) {
-          bookHeight = availableHeight;
+          bookHeight = Math.min(availableHeight, 700); // Максимум 700px высота
           bookWidth = bookHeight * spreadAspectRatio;
         } else {
-          bookWidth = availableWidth;
+          bookWidth = Math.min(availableWidth, 1000); // Максимум 1000px ширина
           bookHeight = bookWidth / spreadAspectRatio;
         }
+      }
+
+      // Убеждаемся, что размеры не слишком маленькие
+      if (isMobile) {
+        bookWidth = Math.max(bookWidth, 300);
+        bookHeight = Math.max(bookHeight, 400);
+      } else {
+        bookWidth = Math.max(bookWidth, 600);
+        bookHeight = Math.max(bookHeight, 400);
       }
 
       setDimensions({ 
