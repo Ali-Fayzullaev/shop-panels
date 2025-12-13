@@ -7,14 +7,9 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 const certificates = [
-  { id: 1, src: '/ser/ser01.jpg', alt: 'Сертификат качества ISO 9001' },
-  { id: 2, src: '/ser/ser02.jpg', alt: 'Сертификат соответствия ГОСТ' },
-  { id: 3, src: '/ser/ser03.jpg', alt: 'Сертификат пожарной безопасности' },
-  { id: 4, src: '/ser/ser04.jpg', alt: 'Экологический сертификат' },
-  { id: 5, src: '/ser/ser01.jpg', alt: 'Сертификат CE' },
-  { id: 6, src: '/ser/ser02.jpg', alt: 'Сертификат RoHS' },
-  { id: 7, src: '/ser/ser03.jpg', alt: 'Гигиенический сертификат' },
-  { id: 8, src: '/ser/ser04.jpg', alt: 'Сертификат прочности материалов' },
+  { id: 1, src: '/certificates/ser1.jpg', alt: 'Сертификат качества ISO 9001' },
+  { id: 2, src: '/certificates/ser2.jpg', alt: 'Сертификат соответствия ГОСТ' },
+  { id: 3, src: '/certificates/ser3.jpg', alt: 'Сертификат пожарной безопасности' },
 ];
 
 export function CertificatesSection() {
@@ -98,14 +93,14 @@ export function CertificatesSection() {
           <div className="hidden md:block">
             <div className="overflow-hidden">
               <div 
-                className="flex transition-transform duration-300 ease-in-out gap-6"
+                className="flex transition-transform duration-300 gap-3"
                 style={{ 
                   transform: `translateX(-${currentSlide * 100}%)`,
                   width: `${totalSlides.desktop * 100}%`
                 }}
               >
                 {Array.from({ length: totalSlides.desktop }).map((_, slideIndex) => (
-                  <div key={slideIndex} className="grid md:grid-cols-4 gap-6 w-[80vw] shrink-0">
+                  <div key={slideIndex} className="grid md:grid-cols-3 gap-2 w-[90vw] shrink-0">
                     {certificates
                       .slice(
                         slideIndex * itemsPerSlide.desktop, 
