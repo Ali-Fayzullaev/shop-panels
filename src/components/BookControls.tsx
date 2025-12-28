@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import { 
-  Volume2, VolumeX, Maximize, Minimize, 
+import { Maximize, Minimize, 
   ChevronLeft, ChevronRight, Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -191,18 +190,6 @@ const BookControls: React.FC<BookControlsProps> = ({
                   <Layers className="w-5 h-5" />
                 </Button>
               )}
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggleSound}
-                className={cn(
-                  "rounded-full w-10 h-10 transition-colors",
-                  soundEnabled ? "text-green-400 hover:bg-green-500/20" : "text-white/50 hover:bg-white/20"
-                )}
-              >
-                {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-              </Button>
 
               <Button
                 variant="ghost"

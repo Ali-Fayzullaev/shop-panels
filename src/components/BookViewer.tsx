@@ -27,48 +27,47 @@ export default function BookViewer({
       const height = window.innerHeight;
       const isMobile = width < 768;
 
-      // Увеличиваем отступы, чтобы книга точно помещалась
-      const paddingX = isMobile ? 40 : 120; // Боковые отступы
-      const paddingY = isMobile ? 140 : 180; // Верх и низ (больше места для контролов)
+      // ИСПРАВЛЕНО: Увеличиваем отступы для лучшего центрирования
+      const paddingX = isMobile ? 20 : 80; // Уменьшенные боковые отступы
+      const paddingY = isMobile ? 120 : 140; // Увеличенные отступы сверху/снизу для контролов
 
       const availableWidth = width - paddingX;
       const availableHeight = height - paddingY;
 
       // Пропорции книги (A4)
-      // На десктопе ширина x2 (разворот), на мобилке x1
       const pageAspectRatio = 0.707; // Ширина одной страницы / Высота
       
       let bookWidth, bookHeight;
 
       if (isMobile) {
-        // Мобилка: Одна страница - ограничиваем размер
+        // Мобилка: Одна страница
         if (availableWidth / availableHeight > pageAspectRatio) {
-          bookHeight = Math.min(availableHeight, 600); // Максимум 600px высота
+          bookHeight = Math.min(availableHeight, 550); // Чуть меньше максимум
           bookWidth = bookHeight * pageAspectRatio;
         } else {
-          bookWidth = Math.min(availableWidth, 400); // Максимум 400px ширина
+          bookWidth = Math.min(availableWidth, 380); // Чуть меньше максимум
           bookHeight = bookWidth / pageAspectRatio;
         }
       } else {
-        // Десктоп: Разворот (Две страницы) - увеличиваем размер
+        // Десктоп: Разворот (Две страницы)
         const spreadAspectRatio = pageAspectRatio * 2; 
         
         if (availableWidth / availableHeight > spreadAspectRatio) {
-          bookHeight = Math.min(availableHeight, 700); // Максимум 700px высота
+          bookHeight = Math.min(availableHeight, 600); // Уменьшенная максимальная высота
           bookWidth = bookHeight * spreadAspectRatio;
         } else {
-          bookWidth = Math.min(availableWidth, 1000); // Максимум 1000px ширина
+          bookWidth = Math.min(availableWidth, 900); // Уменьшенная максимальная ширина
           bookHeight = bookWidth / spreadAspectRatio;
         }
       }
 
       // Убеждаемся, что размеры не слишком маленькие
       if (isMobile) {
-        bookWidth = Math.max(bookWidth, 300);
-        bookHeight = Math.max(bookHeight, 400);
+        bookWidth = Math.max(bookWidth, 280);
+        bookHeight = Math.max(bookHeight, 380);
       } else {
-        bookWidth = Math.max(bookWidth, 600);
-        bookHeight = Math.max(bookHeight, 400);
+        bookWidth = Math.max(bookWidth, 560);
+        bookHeight = Math.max(bookHeight, 380);
       }
 
       setDimensions({ 
@@ -193,12 +192,34 @@ export default function BookViewer({
 
   return (
     <div 
-      ref={containerRef} 
-      className="flex items-center justify-center transition-opacity duration-500"
+      className="w-full h-full flex items-center justify-center p-4"
       style={{
-        // Тень самой книги для реалистичности
-        filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.4))'
+        // ИСПРАВЛЕНО: Убираем любые смещения и гарантируем центрирование
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1
       }}
-    />
+    >
+      <div 
+        ref={containerRef} 
+        className="transition-opacity duration-500"
+        style={{
+          width: dimensions.width,
+          height: dimensions.height,
+          // Тень самой книги для реалистичности
+          filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.4))',
+          // ДОБАВЛЕНО: Гарантируем что контейнер книги тоже по центру
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      />
+    </div>
   );
 }
