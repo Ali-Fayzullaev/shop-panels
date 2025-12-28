@@ -297,6 +297,7 @@ const GalleryView: React.FC<GalleryViewProps> = React.memo(({
               <div className="relative aspect-3/4 overflow-hidden bg-white shadow-lg rounded-md">
                 <img
                   src={page}
+                  
                   alt={`Страница ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -393,7 +394,8 @@ export default function BookPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isGalleryMode, setIsGalleryMode] = useState(false);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
-  const [totalExpectedPages, setTotalExpectedPages] = useState(0); // НОВОЕ: ожидаемое количество страниц
+  const [totalExpectedPages, setTotalExpectedPages] = useState(0);
+  const [isHeaderReady, setIsHeaderReady] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const loadingRef = useRef<boolean>(false);
@@ -429,6 +431,15 @@ export default function BookPage() {
   useEffect(() => {
     CacheUtils.saveCurrentPage(currentPage);
   }, [currentPage]);
+
+  // ДОБАВЛЕНО: Эффект для правильной инициализации после загрузки Header
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsHeaderReady(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Основная загрузка с кешированием - ОБНОВЛЕНО для фоновой загрузки
   const loadPages = useCallback(async (forceReload = false) => {
@@ -928,11 +939,14 @@ export default function BookPage() {
             currentPage={currentPage}
           />
         ) : (
-          <BookViewer 
-            pages={pages}
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-          />
+          isHeaderReady && (
+            <BookViewer 
+              pages={pages}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              headerReady={isHeaderReady}
+            />
+          )
         )}
       </div>
       

@@ -220,7 +220,7 @@ export function CertificatesSection() {
                 {/* Изображение */}
                 {currentCertificate && (
                   <div className="w-full h-full flex items-center justify-center p-4">
-                    <div className="relative max-w-4xl max-h-full">
+                    <div className="relative">
                       <Image
                         src={currentCertificate.src}
                         alt={currentCertificate.alt}

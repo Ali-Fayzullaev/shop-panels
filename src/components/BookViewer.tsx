@@ -7,12 +7,14 @@ interface BookViewerProps {
   pages: string[];
   currentPage: number;
   onPageChange: (page: number) => void;
+  headerReady?: boolean; // ДОБАВЛЕНО: флаг готовности Header
 }
 
 export default function BookViewer({ 
   pages, 
   currentPage, 
-  onPageChange, 
+  onPageChange,
+  headerReady = true // ДОБАВЛЕНО: по умолчанию true для обратной совместимости
 }: BookViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const bookInstanceRef = useRef<PageFlip | null>(null);
@@ -20,19 +22,29 @@ export default function BookViewer({
   // Состояние для перерисовки при ресайзе
   const [dimensions, setDimensions] = useState({ width: 0, height: 0, isMobile: false });
 
-  // 1. Вычисляем размеры книги при загрузке и ресайзе
+  // 1. Вычисляем размеры книги при загрузке и ресайзе - ИСПРАВЛЕНО
   useEffect(() => {
+    // ИСПРАВЛЕНО: Не рассчитываем размеры, пока Header не готов
+    if (!headerReady) {
+      return;
+    }
+
     const calculateDimensions = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
       const isMobile = width < 768;
 
-      // ИСПРАВЛЕНО: Увеличиваем отступы для лучшего центрирования
-      const paddingX = isMobile ? 20 : 80; // Уменьшенные боковые отступы
-      const paddingY = isMobile ? 120 : 140; // Увеличенные отступы сверху/снизу для контролов
+      // ИСПРАВЛЕНО: Получаем реальную высоту Header'а
+      const headerElement = document.querySelector('header');
+      const headerHeight = headerElement ? headerElement.offsetHeight : 80; // fallback 80px
 
+      // ИСПРАВЛЕНО: Правильные отступы с учетом Header'а
+      const paddingX = isMobile ? 20 : 80;
+      const paddingY = isMobile ? 80 : 100; // Базовый отступ для контролов
+      
+      // ИСПРАВЛЕНО: Вычитаем высоту Header'а из доступной высоты
       const availableWidth = width - paddingX;
-      const availableHeight = height - paddingY;
+      const availableHeight = height - headerHeight - paddingY;
 
       // Пропорции книги (A4)
       const pageAspectRatio = 0.707; // Ширина одной страницы / Высота
@@ -42,10 +54,10 @@ export default function BookViewer({
       if (isMobile) {
         // Мобилка: Одна страница
         if (availableWidth / availableHeight > pageAspectRatio) {
-          bookHeight = Math.min(availableHeight, 550); // Чуть меньше максимум
+          bookHeight = Math.min(availableHeight, 500); // Уменьшили максимум для мобилки
           bookWidth = bookHeight * pageAspectRatio;
         } else {
-          bookWidth = Math.min(availableWidth, 380); // Чуть меньше максимум
+          bookWidth = Math.min(availableWidth, 350); // Уменьшили максимум для мобилки
           bookHeight = bookWidth / pageAspectRatio;
         }
       } else {
@@ -53,22 +65,24 @@ export default function BookViewer({
         const spreadAspectRatio = pageAspectRatio * 2; 
         
         if (availableWidth / availableHeight > spreadAspectRatio) {
-          bookHeight = Math.min(availableHeight, 600); // Уменьшенная максимальная высота
+          bookHeight = Math.min(availableHeight, 550); // Уменьшили максимум
           bookWidth = bookHeight * spreadAspectRatio;
         } else {
-          bookWidth = Math.min(availableWidth, 900); // Уменьшенная максимальная ширина
+          bookWidth = Math.min(availableWidth, 800); // Уменьшили максимум
           bookHeight = bookWidth / spreadAspectRatio;
         }
       }
 
       // Убеждаемся, что размеры не слишком маленькие
       if (isMobile) {
-        bookWidth = Math.max(bookWidth, 280);
-        bookHeight = Math.max(bookHeight, 380);
+        bookWidth = Math.max(bookWidth, 250);
+        bookHeight = Math.max(bookHeight, 330);
       } else {
-        bookWidth = Math.max(bookWidth, 560);
-        bookHeight = Math.max(bookHeight, 380);
+        bookWidth = Math.max(bookWidth, 500);
+        bookHeight = Math.max(bookHeight, 350);
       }
+
+      console.log(`📏 BookViewer размеры: ${Math.round(bookWidth)}x${Math.round(bookHeight)}, Header: ${headerHeight}px, доступно: ${Math.round(availableHeight)}px`);
 
       setDimensions({ 
         width: Math.round(bookWidth), 
@@ -77,14 +91,23 @@ export default function BookViewer({
       });
     };
 
-    calculateDimensions();
-    window.addEventListener('resize', calculateDimensions);
-    return () => window.removeEventListener('resize', calculateDimensions);
-  }, []);
+    // ИСПРАВЛЕНО: Небольшая задержка для стабильности расчетов
+    const timer = setTimeout(calculateDimensions, 50);
 
-  // 2. Инициализация PageFlip
+    window.addEventListener('resize', calculateDimensions);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateDimensions);
+    };
+  }, [headerReady]); // ИСПРАВЛЕНО: Пересчитываем при изменении headerReady
+
+  // 2. Инициализация PageFlip - ИСПРАВЛЕНО
   useEffect(() => {
-    if (pages.length === 0 || dimensions.width === 0) return;
+    // ИСПРАВЛЕНО: Не инициализируем, пока Header не готов или размеры не рассчитаны
+    if (!headerReady || pages.length === 0 || dimensions.width === 0) {
+      return;
+    }
 
     const wrapper = containerRef.current;
     if (!wrapper) return;
@@ -120,7 +143,7 @@ export default function BookViewer({
       img.style.cssText = `
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Или cover, если нужно заполнение без полей */
+        object-fit: contain;
       `;
       
       // Номер страницы (опционально)
@@ -168,14 +191,15 @@ export default function BookViewer({
 
     bookInstanceRef.current = pageFlip;
 
+    console.log(`✅ BookViewer инициализирован: ${pages.length} страниц, размер книги: ${pageWidth}x${pageHeight}`);
+
     return () => {
       if (bookInstanceRef.current) {
         bookInstanceRef.current.destroy();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pages, dimensions.width, dimensions.height, dimensions.isMobile]); 
-  // Пересоздаем книгу только если изменились размеры или ориентация
+  // ИСПРАВЛЕНО: Добавляем headerReady в зависимости
+  }, [pages, dimensions.width, dimensions.height, dimensions.isMobile, headerReady]); 
 
   // Синхронизация внешнего изменения страницы (стрелки)
   useEffect(() => {
@@ -194,7 +218,7 @@ export default function BookViewer({
     <div 
       className="w-full h-full flex items-center justify-center p-4"
       style={{
-        // ИСПРАВЛЕНО: Убираем любые смещения и гарантируем центрирование
+        // ИСПРАВЛЕНО: Правильное позиционирование с учетом Header'а
         position: 'absolute',
         top: 0,
         left: 0,
@@ -203,7 +227,9 @@ export default function BookViewer({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1
+        zIndex: 1,
+        // ДОБАВЛЕНО: Учитываем Header в позиционировании
+        paddingTop: '60px' // Примерная высота Header'а
       }}
     >
       <div 
@@ -217,7 +243,9 @@ export default function BookViewer({
           // ДОБАВЛЕНО: Гарантируем что контейнер книги тоже по центру
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          // ДОБАВЛЕНО: Показываем только когда Header готов
+          opacity: headerReady ? 1 : 0
         }}
       />
     </div>
