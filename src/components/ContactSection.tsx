@@ -1,13 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
-import { MapPin, Phone, Clock, Building } from "lucide-react";
+import React, { useState } from "react";
+import { MapPin, Phone, Clock, Building, ExternalLink } from "lucide-react";
 import { COMPANY_INFO, formatPhoneForCall } from "@/lib/company-info";
 
 const locations = [
@@ -17,61 +11,23 @@ const locations = [
     address: "Улица Анет баба, 9, Астана",
     phone: COMPANY_INFO.phone,
     hours: COMPANY_INFO.workingHours,
-    coordinates: { lat: 51.1694, lng: 71.4491 }, // Координаты для Улица Анет баба, 9, Астана
+    coordinates: { lat: 51.1694, lng: 71.4491 },
   },
 ];
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
-const mapCenter = { lat: 51.1694, lng: 71.4491 }; // Координаты офиса
-
-// Мемоизируем Google Maps API библиотеки
-const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = [];
+// Координаты для Яндекс.Карт (формат: долгота,широта)
+const YANDEX_MAP_CENTER = "71.4491,51.1694";
+const YANDEX_MAP_MARKER = "71.4491,51.1694";
 
 export function ContactSection() {
-  const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
 
-  // Получаем Google Maps API ключ
-  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  // URL для открытия в Яндекс.Картах
+  const yandexMapsUrl = `https://yandex.com/maps/?text=${encodeURIComponent("Улица Анет баба, 9, Астана")}&z=16`;
 
-  // Мемоизируем обработчики
-  const handleMapLoad = useCallback(() => {
-    setMapLoaded(true);
-    setMapError(false);
-  }, []);
-
-  const handleMapError = useCallback(() => {
-    setMapError(true);
-    console.warn('Google Maps failed to load in contact section, using fallback');
-  }, []);
-
-  const handleMarkerClick = useCallback(() => {
-    setSelectedMarker(locations[0].id);
-  }, []);
-
-  const handleInfoWindowClose = useCallback(() => {
-    setSelectedMarker(null);
-  }, []);
-
-  // Мемоизируем опции карты
-  const mapOptions = useMemo(() => ({
-    styles: [
-      {
-        featureType: "poi.business",
-        stylers: [{ visibility: "off" }],
-      },
-    ],
-    disableDefaultUI: false,
-    zoomControl: true,
-    mapTypeControl: true,
-    streetViewControl: true,
-    fullscreenControl: true,
-  }), []);
+  // iframe URL для встроенной карты Яндекс
+  const yandexIframeUrl = `https://yandex.ru/map-widget/v1/?ll=${YANDEX_MAP_CENTER}&z=16&pt=${YANDEX_MAP_MARKER},pm2rdm&l=map`;
 
   return (
     <section className="py-16 bg-white">
@@ -119,6 +75,19 @@ export function ContactSection() {
                     <span className="text-[#989898]">{location.hours}</span>
                   </div>
                 </div>
+
+                {/* Кнопка для открытия в картах */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <a
+                    href={yandexMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-[#333333] hover:text-[#555555] font-medium transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Построить маршрут
+                  </a>
+                </div>
               </div>
             ))}
           </div>
@@ -127,8 +96,8 @@ export function ContactSection() {
           <div className="bg-[#333333] p-8 text-white flex flex-col justify-center">
             <h3 className="text-2xl font-bold mb-6">Свяжитесь с нами</h3>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              Наши опытные консультанты готовы помочь вам выбрать идеальные панели. Наши
-              специалисты помогут выбрать идеальные панели для вашего проекта.
+              Наши опытные консультанты готовы помочь вам выбрать идеальные панели. 
+              Наши специалисты помогут выбрать идеальные панели для вашего проекта.
             </p>
             <div className="flex items-center gap-3">
               <Phone className="h-5 w-5 shrink-0" />
@@ -141,65 +110,43 @@ export function ContactSection() {
             </div>
           </div>
 
-          {/* Google Maps */}
+          {/* Яндекс Карты (iframe) */}
           <div className="bg-white overflow-hidden shadow-md">
             <div className="h-full min-h-[400px] lg:min-h-[500px] relative">
-              {GOOGLE_MAPS_API_KEY && !mapError ? (
-                <LoadScript 
-                  googleMapsApiKey={GOOGLE_MAPS_API_KEY}
-                  libraries={libraries}
-                  onLoad={handleMapLoad}
-                  onError={handleMapError}
-                  preventGoogleFontsLoading={true}
-                  loadingElement={
-                    <div className="h-full flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333]"></div>
+              {!mapError ? (
+                <>
+                  {/* Лоадер пока карта загружается */}
+                  {!mapLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#333333] mx-auto mb-4"></div>
+                        <p className="text-[#989898]">Загрузка карты...</p>
+                      </div>
                     </div>
-                  }
-                >
-                  <GoogleMap
-                    mapContainerStyle={{ ...containerStyle, height: "500px" }}
-                    center={mapCenter}
-                    zoom={16}
-                    options={mapOptions}
-                  >
-                    <Marker
-                      position={locations[0].coordinates}
-                      onClick={handleMarkerClick}
-                      icon={{
-                        url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                        scaledSize: mapLoaded && typeof window !== 'undefined' && window.google?.maps 
-                          ? new window.google.maps.Size(32, 32) 
-                          : undefined,
-                      }}
-                    />
-
-                    {selectedMarker !== null && (
-                      <InfoWindow
-                        position={locations[0].coordinates}
-                        onCloseClick={handleInfoWindowClose}
-                      >
-                        <div className="p-3 max-w-xs">
-                          <h3 className="font-bold text-gray-800 mb-2">
-                            {locations[0].title}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-2">
-                            {locations[0].address}
-                          </p>
-                          <p className="text-gray-600 text-sm mb-2">
-                            {locations[0].phone}
-                          </p>
-                          <p className="text-gray-600 text-xs">
-                            {locations[0].hours}
-                          </p>
-                        </div>
-                      </InfoWindow>
-                    )}
-                  </GoogleMap>
-                </LoadScript>
+                  )}
+                  
+                  {/* Яндекс.Карты iframe */}
+                  <iframe
+                    src={yandexIframeUrl}
+                    width="100%"
+                    height="100%"
+                    style={{ 
+                      border: 0, 
+                      minHeight: '500px',
+                      opacity: mapLoaded ? 1 : 0,
+                      transition: 'opacity 0.3s ease'
+                    }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    onLoad={() => setMapLoaded(true)}
+                    onError={() => setMapError(true)}
+                    title="Карта офиса Marmarill в Астане"
+                  />
+                </>
               ) : (
-                // Fallback если нет API ключа или произошла ошибка
-                <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 relative">
+                // Fallback если iframe не загрузился
+                <div className="h-full flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200 min-h-[500px]">
                   <div className="text-center p-8">
                     <div className="w-24 h-24 bg-[#333333] flex items-center justify-center mx-auto mb-4">
                       <Building className="h-12 w-12 text-white" />
@@ -210,18 +157,15 @@ export function ContactSection() {
                     <p className="text-[#989898] mb-4">
                       Улица Анет баба, 9, Астана
                     </p>
-                    <button
-                      onClick={() => {
-                        const mapUrl = `https://yandex.com/maps/?text=${encodeURIComponent(
-                          "Улица Анет баба, 9, Астана"
-                        )}&z=16`;
-                        window.open(mapUrl, "_blank");
-                      }}
+                    <a
+                      href={yandexMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#333333] text-white hover:bg-[#333333]/80 transition-colors"
                     >
                       <MapPin className="h-4 w-4" />
                       Открыть в Яндекс.Картах
-                    </button>
+                    </a>
                   </div>
                 </div>
               )}
@@ -246,9 +190,7 @@ export function ContactSection() {
               Позвонить
             </a>
             <a
-              href={`https://yandex.com/maps/?text=${encodeURIComponent(
-                "Улица Анет баба, 9, Астана"
-              )}&z=16`}
+              href={yandexMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-gray-50 text-[#333333] font-semibold border-2 border-[#333333] transition-colors"
