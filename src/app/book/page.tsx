@@ -3,17 +3,20 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { PageFlip } from 'page-flip';
 import { PDFLoader } from '@/lib/pdfLoader';
-import { ChevronLeft, ChevronRight, Grid, Maximize, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid, Maximize, X, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function BookPage() {
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0); // Прогресс загрузки
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const bookRef = useRef<PageFlip | null>(null);
+  const router = useRouter();
 
   // Скрываем Header/Footer и определяем мобильное устройство
   useEffect(() => {
@@ -34,11 +37,18 @@ export default function BookPage() {
     };
   }, []);
 
-  // Загрузка PDF
+  // Загрузка PDF с прогрессом
   useEffect(() => {
     const loadPDF = async () => {
       try {
-        const loadedPages = await PDFLoader.loadPDFFromURL('/FlipbookViewer.pdf', { scale: 2.0 });
+        const loadedPages = await PDFLoader.loadPDFWithProgress(
+          '/FlipbookViewer.pdf',
+          (loaded, total) => {
+            const percent = Math.round((loaded / total) * 100);
+            setProgress(percent);
+          },
+          { scale: 2.0 }
+        );
         if (loadedPages && loadedPages.length > 0) {
           setPages(loadedPages);
         }
@@ -183,7 +193,7 @@ export default function BookPage() {
       <div className="h-screen w-full flex items-center justify-center bg-slate-900">
         <div className="text-center text-white">
           <div className="w-16 h-16 border-4 border-white/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-          <p>Загрузка каталога...</p>
+          <p>Загрузка каталога... {progress}%</p> {/* Отображение прогресса */}
         </div>
       </div>
     );
@@ -191,6 +201,15 @@ export default function BookPage() {
 
   return (
     <div className="h-screen w-full bg-slate-900 flex flex-col">
+      {/* Кнопка назад */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-20 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur text-white rounded-full hover:bg-black/90 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="hidden sm:inline">Назад</span>
+      </button>
+
       {/* Книга */}
       <div className="flex-1 flex items-center justify-center">
         <div 
